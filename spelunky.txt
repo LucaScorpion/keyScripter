@@ -1,0 +1,4 @@
+# Scan codes
+enter = 28
+down = 208
+up = 200
