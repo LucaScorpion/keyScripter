@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Press() {
+func KeybdEventPress() {
 	kb, err := keybd_event.NewKeyBonding()
 	if err != nil {
 		panic(err)
