@@ -35,9 +35,15 @@ func (l *lexer) Run() {
 
 // Emit the current token in the Tokens channel.
 func (l *lexer) emit(tokenType tokenType) {
+	if l.current == l.start && tokenType != tokenEOF {
+		panic(fmt.Errorf("cannot emit token when current == start, at pos %d", l.start))
+	}
+
 	l.Tokens <- token{
 		tokenType: tokenType,
 		value:     l.input[l.start:l.current],
+		pos:       l.start,
+		length:    l.current - l.start,
 	}
 	l.start = l.current
 }
@@ -52,6 +58,8 @@ func (l *lexer) errorf(err string, args ...interface{}) lexFn {
 	l.Tokens <- token{
 		tokenType: tokenError,
 		value:     fmt.Sprintf(err, args...),
+		pos:       l.current,
+		length:    0,
 	}
 	return nil
 }
@@ -80,36 +88,64 @@ func (l *lexer) currentInput() string {
 	return l.input[l.current:]
 }
 
-func (l *lexer) readWhile(whileFn func(rune) bool) string {
-	val := ""
+func (l *lexer) readWhile(whileFn func(rune) bool) {
 	for {
 		nextRune := l.readRune()
 		if nextRune == eof || !whileFn(nextRune) {
 			l.unreadRune()
 			break
 		}
-		val += string(nextRune)
 	}
-	return val
 }
 
 // Read spaces.
-func (l *lexer) readSpace(includeNewline bool) string {
-	return l.readWhile(func(r rune) bool {
+func (l *lexer) readSpace(includeNewline bool) {
+	l.readWhile(func(r rune) bool {
 		return unicode.IsSpace(r) && (includeNewline || r != newline)
 	})
 }
 
 // Read until the end of line.
-func (l *lexer) readLine() string {
-	return l.readWhile(func(r rune) bool {
+func (l *lexer) readLine() {
+	l.readWhile(func(r rune) bool {
 		return r != newline
 	})
 }
 
 // Read alphanumeric runes.
-func (l *lexer) readAlphaNum() string {
-	return l.readWhile(func(r rune) bool {
+func (l *lexer) readAlphaNum() {
+	l.readWhile(func(r rune) bool {
 		return unicode.IsLetter(r) || unicode.IsNumber(r)
 	})
+}
+
+// Expect a space or EOF.
+// If the next rune is anything else, errorf is used to emit an error.
+func (l *lexer) expectSpace() bool {
+	nextRune := l.peekRune()
+	if nextRune != eof && !unicode.IsSpace(nextRune) {
+		l.errorf("unexpected character: %s", string(nextRune))
+		return false
+	}
+	return true
+}
+
+func (l *lexer) readStringLiteral() {
+	// Opening quote
+	l.readRune()
+
+	var nextRune rune
+	escaped := false
+
+	for {
+		nextRune = l.readRune()
+
+		if escaped {
+			escaped = false
+		} else if nextRune == '\\' {
+			escaped = true
+		} else if nextRune == quote {
+			break
+		}
+	}
 }

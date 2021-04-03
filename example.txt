@@ -1,20 +1,21 @@
 # This is a comment.
 
 # Press a key.
-press q
+press "q"
 
 # Modifiers
 # ^ ctrl
 # [ alt
 # ] right alt
 # % super (win)
-press %r
+press "%r"
 
 # Special keys
-press \esc
+# TODO: think of syntax for this
+press "\esc"
 
 # Type a string
-type thing
+type "thing\nline\"escaped\""
 
 # Wait 500 milliseconds.
 wait 500

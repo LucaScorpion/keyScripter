@@ -33,14 +33,37 @@ func lexFunction(l *lexer) lexFn {
 	l.readAlphaNum()
 	l.emit(tokenIdentifier)
 
-	// Next should be a space, eof, or start of a comment.
-	nextRune := l.peekRune()
-	if !unicode.IsSpace(nextRune) && nextRune != eof && !strings.HasPrefix(l.currentInput(), commentStart) {
-		l.errorf("unexpected character: %s", string(nextRune))
+	if !l.expectSpace() {
 		return nil
 	}
+	return lexArguments
+}
 
-	// TODO: arguments
+func lexArguments(l *lexer) lexFn {
+	l.readSpace(false)
+	l.discard()
 
-	return lexBegin
+	nextRune := l.peekRune()
+
+	// Check if we are at EOF or EOL.
+	if nextRune == eof || nextRune == newline {
+		return lexBegin
+	}
+
+	// String literal
+	if nextRune == quote {
+		l.readStringLiteral()
+		l.emit(tokenLiteralString)
+	}
+
+	// Int literal
+	if unicode.IsNumber(nextRune) {
+		l.readWhile(unicode.IsNumber)
+		l.emit(tokenLiteralInt)
+	}
+
+	if !l.expectSpace() {
+		return nil
+	}
+	return lexArguments
 }

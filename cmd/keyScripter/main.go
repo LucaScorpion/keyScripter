@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	b, _ := ioutil.ReadFile("simple.txt")
+	b, _ := ioutil.ReadFile("example.txt")
 	l := lexer.NewLexer(string(b))
 	go l.Run()
 	for t := range l.Tokens {
