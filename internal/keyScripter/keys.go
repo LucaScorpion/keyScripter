@@ -1,4 +1,4 @@
-package main
+package keyScripter
 
 import (
 	"github.com/micmonay/keybd_event"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func press() {
+func Press() {
 	kb, err := keybd_event.NewKeyBonding()
 	if err != nil {
 		panic(err)
