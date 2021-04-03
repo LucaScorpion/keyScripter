@@ -1,0 +1,20 @@
+# This is a comment.
+
+# Press a key.
+press q
+
+# Modifiers
+# ^ ctrl
+# [ alt
+# ] right alt
+# $ super (win)
+press $r
+
+# Special keys
+press \esc
+
+# Type a string
+type thing
+
+# Wait 500 milliseconds.
+wait 500
