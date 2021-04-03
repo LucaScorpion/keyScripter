@@ -7,8 +7,8 @@ press q
 # ^ ctrl
 # [ alt
 # ] right alt
-# $ super (win)
-press $r
+# % super (win)
+press %r
 
 # Special keys
 press \esc
