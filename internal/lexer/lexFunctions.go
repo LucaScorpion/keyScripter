@@ -11,7 +11,7 @@ func lexBegin(l *lexer) lexFn {
 
 	// Check if we are at EOF.
 	if l.peekRune() == eof {
-		l.emit(tokenEOF)
+		l.emit(TokenEOF)
 		return nil
 	}
 
@@ -24,14 +24,14 @@ func lexBegin(l *lexer) lexFn {
 
 func lexComment(l *lexer) lexFn {
 	l.readLine()
-	l.emit(tokenComment)
+	l.emit(TokenComment)
 	return lexBegin
 }
 
 func lexFunction(l *lexer) lexFn {
 	// Function name
 	l.readAlphaNum()
-	l.emit(tokenIdentifier)
+	l.emit(TokenFuncName)
 
 	if !l.expectSpace() {
 		return nil
@@ -53,13 +53,13 @@ func lexArguments(l *lexer) lexFn {
 	// String literal
 	if nextRune == quote {
 		l.readStringLiteral()
-		l.emit(tokenLiteralString)
+		l.emit(TokenLiteralString)
 	}
 
 	// Int literal
 	if unicode.IsNumber(nextRune) {
 		l.readWhile(unicode.IsNumber)
-		l.emit(tokenLiteralInt)
+		l.emit(TokenLiteralInt)
 	}
 
 	if !l.expectSpace() {

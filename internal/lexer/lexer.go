@@ -8,7 +8,7 @@ import (
 
 type lexer struct {
 	input  string
-	Tokens chan token
+	Tokens chan *Token
 	state  lexFn
 
 	start   int
@@ -20,7 +20,7 @@ type lexFn func(*lexer) lexFn
 func NewLexer(input string) *lexer {
 	return &lexer{
 		input:  strings.ReplaceAll(input, "\r\n", string(newline)),
-		Tokens: make(chan token),
+		Tokens: make(chan *Token),
 		state:  lexBegin,
 	}
 }
@@ -34,14 +34,14 @@ func (l *lexer) Run() {
 }
 
 // Emit the current token in the Tokens channel.
-func (l *lexer) emit(tokenType tokenType) {
-	if l.current == l.start && tokenType != tokenEOF {
+func (l *lexer) emit(tokenType TokenType) {
+	if l.current == l.start && tokenType != TokenEOF {
 		panic(fmt.Errorf("cannot emit token when current == start, at pos %d", l.start))
 	}
 
-	l.Tokens <- token{
-		tokenType: tokenType,
-		value:     l.input[l.start:l.current],
+	l.Tokens <- &Token{
+		TokenType: tokenType,
+		Value:     l.input[l.start:l.current],
 		pos:       l.start,
 		length:    l.current - l.start,
 	}
@@ -55,9 +55,9 @@ func (l *lexer) discard() {
 
 // Emit an error token.
 func (l *lexer) errorf(err string, args ...interface{}) lexFn {
-	l.Tokens <- token{
-		tokenType: tokenError,
-		value:     fmt.Sprintf(err, args...),
+	l.Tokens <- &Token{
+		TokenType: TokenError,
+		Value:     fmt.Sprintf(err, args...),
 		pos:       l.current,
 		length:    0,
 	}

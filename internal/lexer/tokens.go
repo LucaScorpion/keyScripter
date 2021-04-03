@@ -2,39 +2,39 @@ package lexer
 
 import "fmt"
 
-type token struct {
-	tokenType tokenType
-	value     string
+type Token struct {
+	TokenType TokenType
+	Value     string
 	pos       int
 	length    int
 }
 
-func (t token) String() string {
-	return fmt.Sprintf("[%s] (%d, %d) %s", tokenNames[t.tokenType], t.pos, t.length, t.value)
+func (t Token) String() string {
+	return fmt.Sprintf("[%s] (%d, %d) %s", TokenNames[t.TokenType], t.pos, t.length, t.Value)
 }
 
-type tokenType int
+type TokenType int
 
 const (
-	tokenError tokenType = iota
-	tokenEOF
+	TokenError TokenType = iota
+	TokenEOF
 
-	tokenComment
+	TokenComment
 
-	tokenIdentifier
-	tokenLiteralString
-	tokenLiteralInt
+	TokenFuncName
+	TokenLiteralString
+	TokenLiteralInt
 )
 
-var tokenNames = map[tokenType]string{
-	tokenError: "Error",
-	tokenEOF:   "EOF",
+var TokenNames = map[TokenType]string{
+	TokenError: "Error",
+	TokenEOF:   "EOF",
 
-	tokenComment: "Comment",
+	TokenComment: "Comment",
 
-	tokenIdentifier:    "Identifier",
-	tokenLiteralString: "String",
-	tokenLiteralInt:    "Int",
+	TokenFuncName:      "Function",
+	TokenLiteralString: "String",
+	TokenLiteralInt:    "Int",
 }
 
 const (
