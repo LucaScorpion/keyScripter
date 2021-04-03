@@ -6,7 +6,7 @@ type InstructionType string
 
 const (
 	comment      InstructionType = "comment"
-	functionCall                 = "functionCall"
+	functionCall InstructionType = "functionCall"
 )
 
 type Instruction struct {

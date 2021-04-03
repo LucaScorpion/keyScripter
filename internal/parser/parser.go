@@ -1,62 +1,60 @@
 package parser
 
 import (
-	"bufio"
 	"fmt"
 	"io"
-	"strings"
 )
 
 type Parser struct {
-	rd  *bufio.Reader
-	pos Position
+	scan *scanner
 }
 
-type Position struct {
-	line int
-	col  int
-}
-
-func NewParser(input io.Reader) *Parser {
+func NewParser(r io.Reader) *Parser {
 	return &Parser{
-		rd: bufio.NewReader(input),
-		pos: Position{
-			line: 1,
-			col:  1,
-		},
+		scan: newScanner(r),
 	}
 }
 
 func (p *Parser) Parse() error {
 	var err error
 	var instructions []*Instruction
+	prevPos := &position{
+		line: 1,
+		col:  1,
+	}
 
 	for err == nil {
+		// Store the previous position.
+		prevPos = &position{
+			line: p.scan.pos.line,
+			col:  p.scan.pos.col,
+		}
+
+		// Parse the next instruction.
 		var next *Instruction
 		next, err = p.nextInstruction()
 
 		// Store the instruction.
 		if next != nil {
 			instructions = append(instructions, next)
-			fmt.Println(next)
 		}
 	}
 
 	if err == io.EOF {
 		return nil
 	}
-	return err
+	return fmt.Errorf("an error occurred while parsing the script (line %d, col %d): %s", prevPos.line, prevPos.col, err)
 }
 
 func (p *Parser) nextInstruction() (*Instruction, error) {
-	line, err := p.readLine()
+	line, err := p.scan.readLine()
 
 	// Check for empty lines.
 	if len(line) == 0 {
 		return nil, err
 	}
 
-	var iType InstructionType = functionCall
+	var iType = functionCall
 
 	// If the line starts with a '#', it is a comment.
 	if line[0] == '#' {
@@ -67,15 +65,4 @@ func (p *Parser) nextInstruction() (*Instruction, error) {
 		iType: iType,
 		raw:   line,
 	}, err
-}
-
-func (p *Parser) readLine() (string, error) {
-	str, err := p.rd.ReadString('\n')
-
-	// Trim any trailing \r and \n.
-	str = strings.TrimRight(str, "\r\n")
-
-	p.pos.line += 1
-	p.pos.col = 1
-	return str, err
 }
