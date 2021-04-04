@@ -8,7 +8,23 @@ import (
 )
 
 func main() {
-	sendInput.Test()
+	// Input test
+
+	sendInput.Keyboard(&sendInput.KeyboardInput{
+		WVk: 0x5B,
+	})
+	sendInput.Keyboard(&sendInput.KeyboardInput{
+		WVk:     0x5B,
+		DwFlags: sendInput.KEYEVENTF_KEYUP,
+	})
+
+	sendInput.Mouse(&sendInput.MouseInput{
+		Dx:      200,
+		Dy:      200,
+		DwFlags: sendInput.MOUSEEVENTF_MOVE,
+	})
+
+	// WScan finder
 
 	//time.Sleep(2 * time.Second)
 	//sendInput.PressRelease(28)
@@ -25,6 +41,8 @@ func main() {
 	//time.Sleep(1500 * time.Millisecond)
 	//keyScripter.PressRelease(50)
 	return
+
+	// Script test
 
 	b, _ := ioutil.ReadFile("simple.txt")
 	p := parser.NewParser(string(b))
