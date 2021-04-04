@@ -14,14 +14,13 @@ var (
 type inputType uint32
 
 const (
-	INPUT_MOUSE    inputType = 0
-	INPUT_KEYBOARD inputType = 1
-	INPUT_HARDWARE inputType = 2
+	mouse    inputType = 0
+	keyboard inputType = 1
 )
 
 func Keyboard(ki *KeyboardInput) error {
 	i := kInput{
-		inputType: INPUT_KEYBOARD,
+		inputType: keyboard,
 		ki:        *ki,
 	}
 	return sendRawInput(unsafe.Pointer(&i), unsafe.Sizeof(i))
@@ -29,7 +28,7 @@ func Keyboard(ki *KeyboardInput) error {
 
 func Mouse(mi *MouseInput) error {
 	i := mInput{
-		inputType: INPUT_MOUSE,
+		inputType: mouse,
 		mi:        *mi,
 	}
 	return sendRawInput(unsafe.Pointer(&i), unsafe.Sizeof(i))

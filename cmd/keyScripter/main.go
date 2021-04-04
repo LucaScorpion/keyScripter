@@ -15,13 +15,13 @@ func main() {
 	})
 	sendInput.Keyboard(&sendInput.KeyboardInput{
 		WVk:     0x5B,
-		DwFlags: sendInput.KEYEVENTF_KEYUP,
+		DwFlags: sendInput.KeyUp,
 	})
 
 	sendInput.Mouse(&sendInput.MouseInput{
 		Dx:      200,
 		Dy:      200,
-		DwFlags: sendInput.MOUSEEVENTF_MOVE,
+		DwFlags: sendInput.Move,
 	})
 
 	// WScan finder

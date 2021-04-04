@@ -3,7 +3,8 @@ package sendInput
 type kInput struct {
 	inputType inputType
 	ki        KeyboardInput
-	padding   [8]byte
+	// Padding is required to make the struct size 40 bytes.
+	padding [8]byte
 }
 
 type KeyboardInput struct {
@@ -17,8 +18,8 @@ type KeyboardInput struct {
 type KbDwFlag uint32
 
 const (
-	KEYEVENTF_EXTENDEDKEY KbDwFlag = 0x0001
-	KEYEVENTF_KEYUP       KbDwFlag = 0x0002
-	KEYEVENTF_UNICODE     KbDwFlag = 0x0004
-	KEYEVENTF_SCANCODE    KbDwFlag = 0x0008
+	ExtendedKey KbDwFlag = 0x0001
+	KeyUp       KbDwFlag = 0x0002
+	Unicode     KbDwFlag = 0x0004
+	ScanCode    KbDwFlag = 0x0008
 )
