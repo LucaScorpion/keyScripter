@@ -1,13 +1,13 @@
 package sendInput
 
 import (
-	"syscall"
+	"golang.org/x/sys/windows"
 	"unsafe"
 )
 
 // See: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-input
 var (
-	user32        = syscall.NewLazyDLL("user32.dll")
+	user32        = windows.NewLazySystemDLL("user32.dll")
 	sendInputProc = user32.NewProc("SendInput")
 )
 
