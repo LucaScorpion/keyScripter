@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/LucaScorpion/tas-scripter/internal/parser"
-	"github.com/LucaScorpion/tas-scripter/internal/sendInput"
+	"github.com/LucaScorpion/keyScripter/internal/parser"
+	"github.com/LucaScorpion/keyScripter/internal/sendInput"
 	"io/ioutil"
 )
 

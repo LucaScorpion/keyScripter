@@ -1,4 +1,4 @@
-module github.com/LucaScorpion/tas-scripter
+module github.com/LucaScorpion/keyScripter
 
 go 1.15
 

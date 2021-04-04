@@ -3,8 +3,8 @@ package parser
 import (
 	"errors"
 	"fmt"
-	"github.com/LucaScorpion/tas-scripter/internal/lexer"
-	"github.com/LucaScorpion/tas-scripter/internal/runtime"
+	"github.com/LucaScorpion/keyScripter/internal/lexer"
+	"github.com/LucaScorpion/keyScripter/internal/runtime"
 	"strconv"
 )
 
