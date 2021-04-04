@@ -2,18 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/LucaScorpion/tas-scripter/internal/keyScripter"
 	"github.com/LucaScorpion/tas-scripter/internal/parser"
+	"github.com/LucaScorpion/tas-scripter/internal/sendInput"
 	"io/ioutil"
-	"time"
 )
 
 func main() {
-	time.Sleep(2 * time.Second)
-	keyScripter.PressRelease(28)
-	time.Sleep(1000 * time.Millisecond)
-	keyScripter.PressRelease(208) // down
-	time.Sleep(100 * time.Millisecond)
+	sendInput.Test()
+
+	//time.Sleep(2 * time.Second)
+	//sendInput.PressRelease(28)
+	//time.Sleep(1000 * time.Millisecond)
+	//sendInput.PressRelease(208) // down
+	//time.Sleep(100 * time.Millisecond)
 	//keyScripter.PressRelease(200) // up
 
 	//for i := 200; i < 255; i++ {
