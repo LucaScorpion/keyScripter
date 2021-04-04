@@ -2,10 +2,8 @@ package sendInput
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"syscall"
-	"time"
 	"unsafe"
 )
 
@@ -14,22 +12,17 @@ var (
 	sendInputProc = user32.NewProc("SendInput")
 )
 
-type keyboardInput struct {
-	// See: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-	wVk         uint16
-	wScan       uint16
-	dwFlags     dwFlag
-	time        uint32
-	dwExtraInfo uint64
-}
-
+// The input struct to be sent to SendInput.
+// See: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-input
 type input struct {
 	inputType inputType
 	ki        keyboardInput
-	padding   uint64
+
+	// The padding is required because SendInput expects the struct to be 40 bytes.
+	// Padding adds 8 bytes (64 bits).
+	padding uint64
 }
 
-// See: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-input
 type inputType uint32
 
 const (
@@ -38,33 +31,19 @@ const (
 	INPUT_HARDWARE = 2
 )
 
-// See: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-keybdinput
-type dwFlag uint32
-
-const (
-	KEYEVENTF_KEYUP    dwFlag = 0x0002
-	KEYEVENTF_SCANCODE dwFlag = 0x0008
-)
-
 func Test() {
+	fmt.Println(unsafe.Sizeof(input{
+		inputType: INPUT_KEYBOARD,
+		ki: keyboardInput{
+			wVk: 0x5B,
+		},
+	}))
+
 	var i = []input{
 		{
 			inputType: INPUT_KEYBOARD,
 			ki: keyboardInput{
 				wVk: 0x5B,
-			},
-		},
-		{
-			inputType: INPUT_KEYBOARD,
-			ki: keyboardInput{
-				wVk: 0x52,
-			},
-		},
-		{
-			inputType: INPUT_KEYBOARD,
-			ki: keyboardInput{
-				wVk:     0x52,
-				dwFlags: KEYEVENTF_KEYUP,
 			},
 		},
 		{
@@ -100,39 +79,39 @@ func sendInput(i ...input) error {
 	return nil
 }
 
-func Press(scan uint16) {
-	var i input
-	i.inputType = 1 //INPUT_KEYBOARD
-	//i.ki.wVk = 0x0D // virtual key code for enter
-	i.ki.wScan = scan
-	i.ki.dwFlags = 0x0008
-
-	ret, _, err := sendInputProc.Call(
-		uintptr(1),
-		uintptr(unsafe.Pointer(&i)),
-		unsafe.Sizeof(i),
-	)
-	log.Printf("ret: %v error: %v", ret, err)
-}
-
-func Release(scan uint16) {
-	var i input
-	i.inputType = 1 //INPUT_KEYBOARD
-	//i.ki.wVk = 0x0D // virtual key code for enter
-	i.ki.wScan = scan
-	i.ki.dwFlags = 0x0008 | 0x0002
-
-	ret, _, err := sendInputProc.Call(
-		uintptr(1),
-		uintptr(unsafe.Pointer(&i)),
-		unsafe.Sizeof(i),
-	)
-	log.Printf("ret: %v error: %v", ret, err)
-}
-
-func PressRelease(scan uint16) {
-	fmt.Println(scan)
-	Press(scan)
-	time.Sleep(20 * time.Millisecond)
-	Release(scan)
-}
+//func Press(scan uint16) {
+//	var i input
+//	i.inputType = 1 //INPUT_KEYBOARD
+//	//i.ki.wVk = 0x0D // virtual key code for enter
+//	i.ki.wScan = scan
+//	i.ki.dwFlags = 0x0008
+//
+//	ret, _, err := sendInputProc.Call(
+//		uintptr(1),
+//		uintptr(unsafe.Pointer(&i)),
+//		unsafe.Sizeof(i),
+//	)
+//	log.Printf("ret: %v error: %v", ret, err)
+//}
+//
+//func Release(scan uint16) {
+//	var i input
+//	i.inputType = 1 //INPUT_KEYBOARD
+//	//i.ki.wVk = 0x0D // virtual key code for enter
+//	i.ki.wScan = scan
+//	i.ki.dwFlags = 0x0008 | 0x0002
+//
+//	ret, _, err := sendInputProc.Call(
+//		uintptr(1),
+//		uintptr(unsafe.Pointer(&i)),
+//		unsafe.Sizeof(i),
+//	)
+//	log.Printf("ret: %v error: %v", ret, err)
+//}
+//
+//func PressRelease(scan uint16) {
+//	fmt.Println(scan)
+//	Press(scan)
+//	time.Sleep(20 * time.Millisecond)
+//	Release(scan)
+//}
