@@ -1,69 +1,61 @@
 package lexer
 
 import (
-	"strings"
 	"unicode"
 )
 
 func lexBegin(l *lexer) lexFn {
-	l.readSpace(true)
-	l.discard()
-
-	// Check if we are at EOF.
-	if l.peekRune() == eof {
-		l.emit(TokenEOF)
-		return nil
-	}
-
-	if strings.HasPrefix(l.currentInput(), commentStart) {
-		return lexComment
-	} else {
-		return lexFunction
-	}
-}
-
-func lexComment(l *lexer) lexFn {
-	l.readLine()
-	l.emit(TokenComment)
-	return lexBegin
-}
-
-func lexFunction(l *lexer) lexFn {
-	// Function name
-	l.readAlphaNum()
-	l.emit(TokenFuncName)
-
-	if !l.expectSpace() {
-		return nil
-	}
-	return lexArguments
-}
-
-func lexArguments(l *lexer) lexFn {
-	l.readSpace(false)
+	// Discard leading whitespaces.
+	l.readSpace()
 	l.discard()
 
 	nextRune := l.peekRune()
 
-	// Check if we are at EOF or EOL.
-	if nextRune == eof || nextRune == newline {
+	if nextRune == eof {
+		l.emit(TokenEOF)
+		return nil
+	} else if nextRune == newline {
+		l.readRune()
+		l.emit(TokenNewline)
 		return lexBegin
-	}
-
-	// String literal
-	if nextRune == quote {
-		l.readStringLiteral()
-		l.emit(TokenLiteralString)
-	}
-
-	// Int literal
-	if unicode.IsNumber(nextRune) {
+	} else if nextRune == commentStart {
+		l.readLine()
+		l.emit(TokenComment)
+		return lexBegin
+	} else if unicode.IsLetter(nextRune) || nextRune == '_' {
+		l.readAlphaNum()
+		l.emit(TokenIdentifier)
+		return lexBegin
+	} else if unicode.IsNumber(nextRune) {
 		l.readWhile(unicode.IsNumber)
 		l.emit(TokenLiteralInt)
+		return lexBegin
+	} else if nextRune == quote {
+		return lexStringLiteral
+	} else {
+		return l.errorf("unexpected character: '%s'", string(nextRune))
+	}
+}
+
+func lexStringLiteral(l *lexer) lexFn {
+	// Opening quote
+	l.readRune()
+
+	var nextRune rune
+	escaped := false
+
+	for {
+		nextRune = l.readRune()
+
+		if escaped {
+			escaped = false
+		} else if nextRune == '\\' {
+			escaped = true
+		} else if nextRune == quote {
+			break
+		}
 	}
 
-	if !l.expectSpace() {
-		return nil
-	}
-	return lexArguments
+	l.emit(TokenLiteralString)
+	return lexBegin
 }

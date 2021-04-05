@@ -22,7 +22,7 @@ func Parse(input string) (*Script, error) {
 		return nil, err
 	}
 
-	if err := p.prepareFuncs(); err != nil {
+	if err := p.parseTokens(); err != nil {
 		return nil, err
 	}
 
@@ -47,16 +47,17 @@ func (p *parser) lexTokens() error {
 	return nil
 }
 
-func (p *parser) prepareFuncs() error {
+func (p *parser) parseTokens() error {
 	for ; p.tokenPos < len(p.tokens); p.tokenPos++ {
 		token := p.tokens[p.tokenPos]
 		switch token.TokenType {
-		case lexer.TokenFuncName:
+		case lexer.TokenIdentifier:
 			if err := p.prepareFunc(); err != nil {
 				return err
 			}
 		case lexer.TokenEOF:
 		case lexer.TokenComment:
+		case lexer.TokenNewline:
 		default:
 			return fmt.Errorf("unexpected token: %s", lexer.TokenNames[token.TokenType])
 		}
@@ -86,8 +87,10 @@ func (p *parser) prepareFunc() error {
 				return fmt.Errorf("%s is not a valid number", nextToken.Value)
 			}
 			argValues = append(argValues, i)
-		} else {
+		} else if t == lexer.TokenNewline {
 			break
+		} else if t != lexer.TokenComment {
+			return fmt.Errorf("unexpected token: %s", lexer.TokenNames[t])
 		}
 
 		p.tokenPos++

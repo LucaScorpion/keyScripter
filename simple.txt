@@ -1,8 +1,4 @@
 # Start
 print "Starting script..."
-# Sleep 500 milliseconds.
-sleep 500
+sleep 100 # milliseconds
 print "Another"
-sleep 2000
-print "Thing"
-print "a\nnewline \"with quotes"

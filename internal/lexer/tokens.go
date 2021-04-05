@@ -1,6 +1,9 @@
 package lexer
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Token struct {
 	TokenType TokenType
@@ -10,7 +13,7 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("[%s] (%d, %d) %s", TokenNames[t.TokenType], t.pos, t.length, t.Value)
+	return fmt.Sprintf("[%s] (%d, %d) %s", TokenNames[t.TokenType], t.pos, t.length, strings.TrimSpace(t.Value))
 }
 
 type TokenType int
@@ -18,28 +21,30 @@ type TokenType int
 const (
 	TokenError TokenType = iota
 	TokenEOF
+	TokenNewline
 
 	TokenComment
 
-	TokenFuncName
+	TokenIdentifier
 	TokenLiteralString
 	TokenLiteralInt
 )
 
 var TokenNames = map[TokenType]string{
-	TokenError: "Error",
-	TokenEOF:   "EOF",
+	TokenError:   "Error",
+	TokenEOF:     "EOF",
+	TokenNewline: "Newline",
 
 	TokenComment: "Comment",
 
-	TokenFuncName:      "Function",
+	TokenIdentifier:    "Identifier",
 	TokenLiteralString: "String",
 	TokenLiteralInt:    "Int",
 }
 
 const (
-	eof          rune   = 0
-	commentStart string = "#"
-	newline      rune   = '\n'
-	quote        rune   = '"'
+	eof          rune = 0
+	commentStart rune = '#'
+	newline      rune = '\n'
+	quote        rune = '"'
 )

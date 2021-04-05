@@ -19,7 +19,7 @@ type lexFn func(*lexer) lexFn
 
 func NewLexer(input string) *lexer {
 	return &lexer{
-		input:  strings.ReplaceAll(input, "\r\n", string(newline)),
+		input:  strings.ReplaceAll(input, "\r", ""),
 		Tokens: make(chan *Token),
 		state:  lexBegin,
 	}
@@ -41,11 +41,15 @@ func (l *lexer) emit(tokenType TokenType) {
 
 	l.Tokens <- &Token{
 		TokenType: tokenType,
-		Value:     l.input[l.start:l.current],
+		Value:     l.currentValue(),
 		pos:       l.start,
 		length:    l.current - l.start,
 	}
 	l.start = l.current
+}
+
+func (l *lexer) currentValue() string {
+	return l.input[l.start:l.current]
 }
 
 // Discard the current token by setting the start position to current.
@@ -84,10 +88,6 @@ func (l *lexer) unreadRune() {
 	l.current--
 }
 
-func (l *lexer) currentInput() string {
-	return l.input[l.current:]
-}
-
 func (l *lexer) readWhile(whileFn func(rune) bool) {
 	for {
 		nextRune := l.readRune()
@@ -98,10 +98,10 @@ func (l *lexer) readWhile(whileFn func(rune) bool) {
 	}
 }
 
-// Read spaces.
-func (l *lexer) readSpace(includeNewline bool) {
+// Read spaces, excluding newlines.
+func (l *lexer) readSpace() {
 	l.readWhile(func(r rune) bool {
-		return unicode.IsSpace(r) && (includeNewline || r != newline)
+		return unicode.IsSpace(r) && r != newline
 	})
 }
 
@@ -112,40 +112,9 @@ func (l *lexer) readLine() {
 	})
 }
 
-// Read alphanumeric runes.
+// Read alphanumeric runes (a-z, 0-9, _).
 func (l *lexer) readAlphaNum() {
 	l.readWhile(func(r rune) bool {
-		return unicode.IsLetter(r) || unicode.IsNumber(r)
+		return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
 	})
-}
-
-// Expect a space or EOF.
-// If the next rune is anything else, errorf is used to emit an error.
-func (l *lexer) expectSpace() bool {
-	nextRune := l.peekRune()
-	if nextRune != eof && !unicode.IsSpace(nextRune) {
-		l.errorf("unexpected character: %s", string(nextRune))
-		return false
-	}
-	return true
-}
-
-func (l *lexer) readStringLiteral() {
-	// Opening quote
-	l.readRune()
-
-	var nextRune rune
-	escaped := false
-
-	for {
-		nextRune = l.readRune()
-
-		if escaped {
-			escaped = false
-		} else if nextRune == '\\' {
-			escaped = true
-		} else if nextRune == quote {
-			break
-		}
-	}
 }
