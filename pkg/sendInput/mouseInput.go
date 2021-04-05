@@ -5,6 +5,7 @@ type mInput struct {
 	mi        MouseInput
 }
 
+// See: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
 type MouseInput struct {
 	Dx          int32
 	Dy          int32

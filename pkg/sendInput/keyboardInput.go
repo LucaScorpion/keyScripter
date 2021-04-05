@@ -7,6 +7,7 @@ type kInput struct {
 	padding [8]byte
 }
 
+// See: https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-keybdinput
 type KeyboardInput struct {
 	WVk         uint16
 	WScan       uint16

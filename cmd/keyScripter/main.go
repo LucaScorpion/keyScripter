@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/LucaScorpion/keyScripter/internal/parser"
-	"github.com/LucaScorpion/keyScripter/internal/sendInput"
+	"github.com/LucaScorpion/keyScripter/pkg/sendInput"
 	"io/ioutil"
 )
 
