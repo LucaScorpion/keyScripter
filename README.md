@@ -2,6 +2,10 @@
 
 A tool to script keyboard and mouse inputs for Windows.
 
+## Usage
+
+To run a script, simply drag it onto the `keyScripter.exe` executable. From the command-line you can run `keyScripter.exe SCRIPT` (where `SCRIPT` is the path to the script). For the full help and options run `keyScripter.exe --help`.
+
 ## Scripting Reference
 
 See [SCRIPTING.md](SCRIPTING.md).
