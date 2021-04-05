@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func waitFn(args fnArgs) (RuntimeFn, error) {
+func sleepFn(args fnArgs) (RuntimeFn, error) {
 	if len(args) != 1 {
 		return nil, fmt.Errorf("wait requires 1 argument")
 	}

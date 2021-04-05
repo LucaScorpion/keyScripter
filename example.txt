@@ -18,4 +18,4 @@ press "\esc"
 type "thing\nline\"escaped\""
 
 # Wait 500 milliseconds.
-wait 500
+sleep 500

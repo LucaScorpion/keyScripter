@@ -5,7 +5,7 @@
 ```
 # Lines starting with a "#" are comments.
 print "Call functions like this."
-wait 500
+sleep 500
 print "Done!"
 ```
 
@@ -29,13 +29,13 @@ A simple print.
 42 is replaced by the passed values.
 ```
 
-### wait
+### sleep
 
 Wait a number of milliseconds before resuming the script.
 
 Example:
 
 ```
-# Wait 1 second:
-wait 1000
+# Sleep for 1 second:
+sleep 1000
 ```

@@ -1,7 +1,7 @@
 # Start
 print "Starting script..."
-# Wait 500 milliseconds.
-wait 500
+# Sleep 500 milliseconds.
+sleep 500
 print "Another"
-wait 2000
+sleep 2000
 print "Thing"

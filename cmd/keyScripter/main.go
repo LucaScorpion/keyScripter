@@ -3,27 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/LucaScorpion/keyScripter/internal/parser"
-	"github.com/LucaScorpion/keyScripter/pkg/sendInput"
 	"io/ioutil"
 )
 
 func main() {
-	// Input test
-
-	sendInput.Keyboard(&sendInput.KeyboardInput{
-		WVk: 0x5B,
-	})
-	sendInput.Keyboard(&sendInput.KeyboardInput{
-		WVk:     0x5B,
-		DwFlags: sendInput.KeyUp,
-	})
-
-	sendInput.Mouse(&sendInput.MouseInput{
-		Dx:      200,
-		Dy:      200,
-		DwFlags: sendInput.Move,
-	})
-
 	// WScan finder
 
 	//time.Sleep(2 * time.Second)
@@ -40,7 +23,6 @@ func main() {
 
 	//time.Sleep(1500 * time.Millisecond)
 	//keyScripter.PressRelease(50)
-	return
 
 	// Script test
 
