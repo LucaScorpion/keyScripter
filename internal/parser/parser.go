@@ -8,20 +8,28 @@ import (
 	"strconv"
 )
 
-type Parser struct {
+type parser struct {
 	input    string
 	tokens   []*lexer.Token
 	tokenPos int
 	funcs    []*runtime.RuntimeFn
 }
 
-func NewParser(input string) *Parser {
-	return &Parser{
-		input: input,
+func Parse(input string) (*Script, error) {
+	p := &parser{input: input}
+
+	if err := p.lexTokens(); err != nil {
+		return nil, err
 	}
+
+	if err := p.prepareFuncs(); err != nil {
+		return nil, err
+	}
+
+	return &Script{funcs: p.funcs}, nil
 }
 
-func (p *Parser) Parse() error {
+func (p *parser) lexTokens() error {
 	// Collect all the tokens.
 	l := lexer.NewLexer(p.input)
 	go l.Run()
@@ -39,11 +47,7 @@ func (p *Parser) Parse() error {
 	return nil
 }
 
-func (p *Parser) Prepare() error {
-	if p.tokens == nil {
-		panic("Prepare should not be called before Parse")
-	}
-
+func (p *parser) prepareFuncs() error {
 	for ; p.tokenPos < len(p.tokens); p.tokenPos++ {
 		token := p.tokens[p.tokenPos]
 		switch token.TokenType {
@@ -61,7 +65,7 @@ func (p *Parser) Prepare() error {
 	return nil
 }
 
-func (p *Parser) prepareFunc() error {
+func (p *parser) prepareFunc() error {
 	// Get the function name, look it up.
 	funcName := p.tokens[p.tokenPos].Value
 	fn, ok := runtime.Functions[funcName]
@@ -100,19 +104,9 @@ func (p *Parser) prepareFunc() error {
 	return nil
 }
 
-func (p *Parser) peekToken() *lexer.Token {
+func (p *parser) peekToken() *lexer.Token {
 	if p.tokenPos+1 >= len(p.tokens) {
 		return nil
 	}
 	return p.tokens[p.tokenPos+1]
-}
-
-func (p *Parser) Run() {
-	if p.funcs == nil {
-		panic("Run should not be called before Prepare")
-	}
-
-	for _, f := range p.funcs {
-		(*f)()
-	}
 }

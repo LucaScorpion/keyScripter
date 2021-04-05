@@ -5,3 +5,4 @@ sleep 500
 print "Another"
 sleep 2000
 print "Thing"
+print "a\nnewline \"with quotes"
