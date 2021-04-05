@@ -6,8 +6,8 @@ import (
 )
 
 type Value interface {
-	Kind(ctx *context) Kind
-	Value(ctx *context) interface{}
+	Kind(ctx *Context) Kind
+	Value(ctx *Context) interface{}
 }
 
 type Kind string
@@ -48,11 +48,11 @@ func NewStringValue(val string) StringValue {
 	return StringValue{val: val}
 }
 
-func (v StringValue) Kind(_ *context) Kind {
+func (v StringValue) Kind(_ *Context) Kind {
 	return StringKind
 }
 
-func (v StringValue) Value(_ *context) interface{} {
+func (v StringValue) Value(_ *Context) interface{} {
 	return v.val
 }
 
@@ -64,11 +64,11 @@ func NewNumberValue(val int) NumberValue {
 	return NumberValue{val: val}
 }
 
-func (v NumberValue) Kind(_ *context) Kind {
+func (v NumberValue) Kind(_ *Context) Kind {
 	return NumberKind
 }
 
-func (v NumberValue) Value(_ *context) interface{} {
+func (v NumberValue) Value(_ *Context) interface{} {
 	return v.val
 }
 
@@ -80,10 +80,10 @@ func NewVariableValue(ref string) VariableValue {
 	return VariableValue{ref: ref}
 }
 
-func (v VariableValue) Kind(ctx *context) Kind {
-	return ctx.getValue(v.ref).Kind(ctx)
+func (v VariableValue) Kind(ctx *Context) Kind {
+	return ctx.GetValue(v.ref).Kind(ctx)
 }
 
-func (v VariableValue) Value(ctx *context) interface{} {
-	return ctx.getValue(v.ref).Value(ctx)
+func (v VariableValue) Value(ctx *Context) interface{} {
+	return ctx.GetValue(v.ref).Value(ctx)
 }

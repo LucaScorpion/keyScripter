@@ -1,7 +1,7 @@
 package runtime
 
 type Instruction interface {
-	Execute(ctx *context)
+	Execute(ctx *Context)
 }
 
 type FunctionCall struct {
@@ -9,7 +9,7 @@ type FunctionCall struct {
 	Args []Value
 }
 
-func (f FunctionCall) Execute(ctx *context) {
+func (f FunctionCall) Execute(ctx *Context) {
 	f.Fn.call(f.Args, ctx)
 }
 
@@ -18,6 +18,6 @@ type Assignment struct {
 	Val  Value
 }
 
-func (a Assignment) Execute(ctx *context) {
-	ctx.setValue(a.Name, a.Val)
+func (a Assignment) Execute(ctx *Context) {
+	ctx.SetValue(a.Name, a.Val)
 }

@@ -13,11 +13,13 @@ type parser struct {
 	tokens       []*lexer.Token
 	tokenPos     int
 	instructions []runtime.Instruction
+	ctx          *runtime.Context
 }
 
 func Parse(input string) (*runtime.Script, error) {
 	p := &parser{
 		input: input,
+		ctx:   runtime.NewContext(),
 	}
 
 	if err := p.lexTokens(); err != nil {
@@ -98,9 +100,8 @@ func (p *parser) parseAssignment() error {
 		Val:  val,
 	})
 
-	// Store the value kind in the context.
-	// TODO
-	//p.varKinds[varName] = val.
+	// Store the value in the context.
+	p.ctx.SetValue(varName, val)
 
 	// An assignment must be followed by a newline or EOF.
 	endToken := p.readToken().TokenType
@@ -134,8 +135,14 @@ func (p *parser) parseFunc() error {
 		}
 	}
 
-	// TODO: validate the function
-	// fn.Validate(p.ctx)
+	// Validate the function.
+	argKinds := make([]runtime.Kind, len(argValues))
+	for i := 0; i < len(argValues); i++ {
+		argKinds[i] = argValues[i].Kind(p.ctx)
+	}
+	if err := fn.Validate(argKinds); err != nil {
+		return err
+	}
 
 	// Store the function call instruction.
 	p.instructions = append(p.instructions, runtime.FunctionCall{

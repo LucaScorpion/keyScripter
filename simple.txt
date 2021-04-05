@@ -6,4 +6,4 @@ msg = "Assignment"
 # print msg
 
 t = 100
-# sleep t
+sleep t

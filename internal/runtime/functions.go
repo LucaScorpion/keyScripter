@@ -29,13 +29,14 @@ func newScriptFn(fn interface{}) *ScriptFn {
 	}
 
 	for i := 0; i < t.NumIn(); i++ {
-		res.params = append(res.params, kindFromType(t.In(i)))
+		res.params[i] = kindFromType(t.In(i))
 	}
 
 	return res
 }
 
 func (fn *ScriptFn) Validate(args []Kind) error {
+	// TODO: If variadic, arg count can be 1 less than len(fn.params)
 	// Check if the argument count matches.
 	if len(args) < len(fn.params) || (!fn.variadic && len(args) > len(fn.params)) {
 		return fmt.Errorf("mismatched argument count, expected %d but got %d", len(fn.params), len(args))
@@ -59,10 +60,11 @@ func (fn *ScriptFn) Validate(args []Kind) error {
 	return nil
 }
 
-func (fn *ScriptFn) call(args []Value, ctx *context) {
+func (fn *ScriptFn) call(args []Value, ctx *Context) {
+	// TODO: If variadic, arg count can be 1 less than len(fn.params)
 	in := make([]reflect.Value, len(args))
 	for i := 0; i < len(args); i++ {
-		in = append(in, reflect.ValueOf(args[i].Value(ctx)))
+		in[i] = reflect.ValueOf(args[i].Value(ctx))
 	}
 
 	fn.rawFn.Call(in)

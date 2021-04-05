@@ -9,9 +9,7 @@ func NewScript(instructions []Instruction) *Script {
 }
 
 func (s *Script) Run() {
-	ctx := &context{
-		values: make(map[string]Value),
-	}
+	ctx := NewContext()
 	for _, f := range s.instructions {
 		f.Execute(ctx)
 	}
