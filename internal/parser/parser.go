@@ -9,14 +9,16 @@ import (
 )
 
 type parser struct {
-	input    string
-	tokens   []*lexer.Token
-	tokenPos int
-	funcs    []*runtime.RuntimeFn
+	input        string
+	tokens       []*lexer.Token
+	tokenPos     int
+	instructions []runtime.Instruction
 }
 
-func Parse(input string) (*Script, error) {
-	p := &parser{input: input}
+func Parse(input string) (*runtime.Script, error) {
+	p := &parser{
+		input: input,
+	}
 
 	if err := p.lexTokens(); err != nil {
 		return nil, err
@@ -26,16 +28,16 @@ func Parse(input string) (*Script, error) {
 		return nil, err
 	}
 
-	return &Script{funcs: p.funcs}, nil
+	return runtime.NewScript(p.instructions), nil
 }
 
 func (p *parser) lexTokens() error {
-	// Collect all the tokens.
+	// Create and run the lexer.
 	l := lexer.NewLexer(p.input)
 	go l.Run()
 
+	// Collect all the tokens.
 	var tokens []*lexer.Token
-
 	for t := range l.Tokens {
 		tokens = append(tokens, t)
 		if t.TokenType == lexer.TokenError {
@@ -85,17 +87,25 @@ func (p *parser) parseAssignment() error {
 	p.readToken()
 
 	// Get the assigned value.
-	_, err := p.parseValue()
+	val, err := p.parseValue()
 	if err != nil {
 		return err
 	}
 
-	// TODO: Add assignment to instructions list
+	// Store the assignment instruction.
+	p.instructions = append(p.instructions, runtime.Assignment{
+		Name: varName,
+		Val:  val,
+	})
+
+	// Store the value kind in the context.
+	// TODO
+	//p.varKinds[varName] = val.
 
 	// An assignment must be followed by a newline or EOF.
 	endToken := p.readToken().TokenType
 	if endToken != lexer.TokenNewline && endToken != lexer.TokenEOF {
-		return fmt.Errorf("unexpected %s token after assignment", endToken)
+		return fmt.Errorf("unexpected %s token after assignment", lexer.TokenNames[endToken])
 	}
 	return nil
 }
@@ -112,7 +122,6 @@ func (p *parser) parseFunc() error {
 	var argValues []runtime.Value
 	for next := p.peekToken(); next.TokenType != lexer.TokenEOF && next.TokenType != lexer.TokenNewline; next = p.peekToken() {
 		if next.IsValueToken() {
-			// TODO
 			val, err := p.parseValue()
 			if err != nil {
 				return err
@@ -125,13 +134,14 @@ func (p *parser) parseFunc() error {
 		}
 	}
 
-	// Prepare the function.
-	prepared, err := fn(argValues)
-	if err != nil {
-		return err
-	}
+	// TODO: validate the function
+	// fn.Validate(p.ctx)
 
-	p.funcs = append(p.funcs, &prepared)
+	// Store the function call instruction.
+	p.instructions = append(p.instructions, runtime.FunctionCall{
+		Fn:   fn,
+		Args: argValues,
+	})
 	return nil
 }
 
@@ -139,22 +149,16 @@ func (p *parser) parseValue() (runtime.Value, error) {
 	valueToken := p.readToken()
 	switch valueToken.TokenType {
 	case lexer.TokenLiteralString:
-		return runtime.StringValue{
-			Val: valueToken.Value,
-		}, nil
+		// TODO: Process value, remove quotes, escape sequences.
+		return runtime.NewStringValue(valueToken.Value), nil
 	case lexer.TokenLiteralInt:
 		intVal, err := strconv.Atoi(valueToken.Value)
 		if err != nil {
 			return nil, fmt.Errorf("invalid number value: %s", valueToken.Value)
 		}
-		return runtime.NumberValue{
-			Val: intVal,
-		}, nil
+		return runtime.NewNumberValue(intVal), nil
 	case lexer.TokenIdentifier:
-		// TODO ?
-		return runtime.VariableValue{
-			VarName: valueToken.Value,
-		}, nil
+		return runtime.NewVariableValue(valueToken.Value), nil
 	default:
 		return nil, fmt.Errorf("unexpected token as value: %s", lexer.TokenNames[valueToken.TokenType])
 	}

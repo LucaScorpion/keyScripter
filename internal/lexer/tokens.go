@@ -10,6 +10,8 @@ type Token struct {
 	Value     string
 	pos       int
 	length    int
+
+	// TODO: Store Name (TokenName) here as well
 }
 
 func (t Token) String() string {

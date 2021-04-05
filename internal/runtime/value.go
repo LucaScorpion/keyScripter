@@ -1,63 +1,89 @@
 package runtime
 
-type Value interface {
-	kind() string
-	resolveKind( /* TODO: context */ ) string
-	resolveValue( /* TODO: context */ ) interface{}
-}
-
-const (
-	kindString   = "string"
-	kindNumber   = "number"
-	kindVariable = "variable"
+import (
+	"fmt"
+	"reflect"
 )
 
+type Value interface {
+	Kind(ctx *context) Kind
+	Value(ctx *context) interface{}
+}
+
+type Kind string
+
+const (
+	StringKind Kind = "string"
+	NumberKind Kind = "number"
+	AnyKind    Kind = "any"
+)
+
+var kindMap = map[reflect.Kind]Kind{
+	reflect.String:    StringKind,
+	reflect.Int:       NumberKind,
+	reflect.Interface: AnyKind,
+}
+
+func kindFromType(t reflect.Type) Kind {
+	k := t.Kind()
+	if r, ok := kindMap[k]; ok {
+		return r
+	}
+
+	if k == reflect.Slice {
+		// Don't recurse here, since we can only handle 1-deep slice types.
+		if r, ok := kindMap[t.Elem().Kind()]; ok {
+			return r
+		}
+	}
+
+	panic(fmt.Errorf("invalid value kind: %s", k.String()))
+}
+
 type StringValue struct {
-	Val string
+	val string
 }
 
-func (v StringValue) kind() string {
-	return kindString
+func NewStringValue(val string) StringValue {
+	return StringValue{val: val}
 }
 
-func (v StringValue) resolveKind() string {
-	return v.kind()
+func (v StringValue) Kind(_ *context) Kind {
+	return StringKind
 }
 
-func (v StringValue) resolveValue() interface{} {
-	return v.Val
+func (v StringValue) Value(_ *context) interface{} {
+	return v.val
 }
 
 type NumberValue struct {
-	Val int
+	val int
 }
 
-func (v NumberValue) kind() string {
-	return kindNumber
+func NewNumberValue(val int) NumberValue {
+	return NumberValue{val: val}
 }
 
-func (v NumberValue) resolveKind() string {
-	return v.kind()
+func (v NumberValue) Kind(_ *context) Kind {
+	return NumberKind
 }
 
-func (v NumberValue) resolveValue() interface{} {
-	return v.Val
+func (v NumberValue) Value(_ *context) interface{} {
+	return v.val
 }
 
 type VariableValue struct {
-	VarName string
+	ref string
 }
 
-func (v VariableValue) kind() string {
-	return kindVariable
+func NewVariableValue(ref string) VariableValue {
+	return VariableValue{ref: ref}
 }
 
-func (v VariableValue) resolveKind() string {
-	// TODO
-	return "todo"
+func (v VariableValue) Kind(ctx *context) Kind {
+	return ctx.getValue(v.ref).Kind(ctx)
 }
 
-func (v VariableValue) resolveValue() interface{} {
-	// TODO
-	return "todo"
+func (v VariableValue) Value(ctx *context) interface{} {
+	return ctx.getValue(v.ref).Value(ctx)
 }
