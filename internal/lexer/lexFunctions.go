@@ -32,9 +32,13 @@ func lexBegin(l *lexer) lexFn {
 		return lexBegin
 	} else if nextRune == quote {
 		return lexStringLiteral
-	} else {
-		return l.errorf("unexpected character: '%s'", string(nextRune))
+	} else if nextRune == equals {
+		l.readRune()
+		l.emit(TokenAssign)
+		return lexBegin
 	}
+
+	return l.errorf("unexpected character: '%s'", string(nextRune))
 }
 
 func lexStringLiteral(l *lexer) lexFn {

@@ -1,4 +1,9 @@
 # Start
 print "Starting script..."
-sleep 100 # milliseconds
-print "Another"
+sleep 10 # milliseconds
+
+msg = "Assignment"
+# print msg
+
+t = 100
+# sleep t

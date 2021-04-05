@@ -10,12 +10,12 @@ func sleepFn(args fnArgs) (RuntimeFn, error) {
 		return nil, fmt.Errorf("sleep requires 1 argument")
 	}
 
-	t, ok := args[0].(int)
-	if !ok {
-		return nil, fmt.Errorf("the first argument of wait must be a number, got \"%s\"", args[0])
+	argKind := args[0].resolveKind()
+	if argKind != kindNumber {
+		return nil, fmt.Errorf("the first argument of sleep must be a number, got: %s", argKind)
 	}
 
 	return func() {
-		time.Sleep(time.Duration(t) * time.Millisecond)
+		time.Sleep(time.Duration(args[0].resolveValue().(int)) * time.Millisecond)
 	}, nil
 }

@@ -7,12 +7,13 @@ func printFn(args fnArgs) (RuntimeFn, error) {
 		return nil, fmt.Errorf("print requires at least 1 argument")
 	}
 
-	format, ok := args[0].(string)
-	if !ok {
-		return nil, fmt.Errorf("the first argument of print must be a string")
+	formatKind := args[0].resolveKind()
+	if formatKind != kindString {
+		return nil, fmt.Errorf("the first argument of print must be a string, got: %s", formatKind)
 	}
 
 	return func() {
-		fmt.Printf(format+"\n", args[1:]...)
+		// TODO
+		fmt.Printf(args[0].resolveValue().(string) + "\n" /*, args[1:]...*/)
 	}, nil
 }

@@ -16,6 +16,10 @@ func (t Token) String() string {
 	return fmt.Sprintf("[%s] (%d, %d) %s", TokenNames[t.TokenType], t.pos, t.length, strings.TrimSpace(t.Value))
 }
 
+func (t *Token) IsValueToken() bool {
+	return t.TokenType > tokenValueStart && t.TokenType < tokenValueEnd
+}
+
 type TokenType int
 
 const (
@@ -25,9 +29,13 @@ const (
 
 	TokenComment
 
+	tokenValueStart
 	TokenIdentifier
 	TokenLiteralString
 	TokenLiteralInt
+	tokenValueEnd
+
+	TokenAssign
 )
 
 var TokenNames = map[TokenType]string{
@@ -40,6 +48,8 @@ var TokenNames = map[TokenType]string{
 	TokenIdentifier:    "Identifier",
 	TokenLiteralString: "String",
 	TokenLiteralInt:    "Int",
+
+	TokenAssign: "Assign",
 }
 
 const (
@@ -47,4 +57,5 @@ const (
 	commentStart rune = '#'
 	newline      rune = '\n'
 	quote        rune = '"'
+	equals       rune = '='
 )

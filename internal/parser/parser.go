@@ -48,53 +48,81 @@ func (p *parser) lexTokens() error {
 }
 
 func (p *parser) parseTokens() error {
-	for ; p.tokenPos < len(p.tokens); p.tokenPos++ {
-		token := p.tokens[p.tokenPos]
-		switch token.TokenType {
+	for nextToken := p.peekToken(); nextToken.TokenType != lexer.TokenEOF; nextToken = p.peekToken() {
+		switch nextToken.TokenType {
 		case lexer.TokenIdentifier:
-			if err := p.prepareFunc(); err != nil {
+			afterNextToken := p.peekTokenN(2)
+			if afterNextToken.TokenType == lexer.TokenAssign {
+				if err := p.parseAssignment(); err != nil {
+					return err
+				}
+				break
+			}
+
+			if err := p.parseFunc(); err != nil {
 				return err
 			}
-		case lexer.TokenEOF:
 		case lexer.TokenComment:
+			p.readToken()
 		case lexer.TokenNewline:
+			p.readToken()
 		default:
-			return fmt.Errorf("unexpected token: %s", lexer.TokenNames[token.TokenType])
+			return fmt.Errorf("unexpected token: %s", lexer.TokenNames[nextToken.TokenType])
 		}
 	}
-
 	return nil
 }
 
-func (p *parser) prepareFunc() error {
+func (p *parser) parseAssignment() error {
+	varName := p.readToken().Value
+
+	// Check if the name is not a function name.
+	if _, ok := runtime.Functions[varName]; ok {
+		return fmt.Errorf("cannot assign to \"%s\"", varName)
+	}
+
+	// Consume the assign token.
+	p.readToken()
+
+	// Get the assigned value.
+	_, err := p.parseValue()
+	if err != nil {
+		return err
+	}
+
+	// TODO: Add assignment to instructions list
+
+	// An assignment must be followed by a newline or EOF.
+	endToken := p.readToken().TokenType
+	if endToken != lexer.TokenNewline && endToken != lexer.TokenEOF {
+		return fmt.Errorf("unexpected %s token after assignment", endToken)
+	}
+	return nil
+}
+
+func (p *parser) parseFunc() error {
 	// Get the function name, look it up.
-	funcName := p.tokens[p.tokenPos].Value
+	funcName := p.readToken().Value
 	fn, ok := runtime.Functions[funcName]
 	if !ok {
 		return fmt.Errorf("unknown function \"%s\"", funcName)
 	}
 
 	// Collect all function argument tokens.
-	var argValues []interface{}
-	nextToken := p.peekToken()
-	for nextToken != nil {
-		t := nextToken.TokenType
-		if t == lexer.TokenLiteralString {
-			argValues = append(argValues, nextToken.Value)
-		} else if t == lexer.TokenLiteralInt {
-			i, err := strconv.Atoi(nextToken.Value)
+	var argValues []runtime.Value
+	for next := p.peekToken(); next.TokenType != lexer.TokenEOF && next.TokenType != lexer.TokenNewline; next = p.peekToken() {
+		if next.IsValueToken() {
+			// TODO
+			val, err := p.parseValue()
 			if err != nil {
-				return fmt.Errorf("%s is not a valid number", nextToken.Value)
+				return err
 			}
-			argValues = append(argValues, i)
-		} else if t == lexer.TokenNewline {
-			break
-		} else if t != lexer.TokenComment {
-			return fmt.Errorf("unexpected token: %s", lexer.TokenNames[t])
+			argValues = append(argValues, val)
+		} else if next.TokenType == lexer.TokenComment {
+			p.readToken()
+		} else {
+			return fmt.Errorf("unexpected token in function call: %s", lexer.TokenNames[next.TokenType])
 		}
-
-		p.tokenPos++
-		nextToken = p.peekToken()
 	}
 
 	// Prepare the function.
@@ -107,9 +135,51 @@ func (p *parser) prepareFunc() error {
 	return nil
 }
 
-func (p *parser) peekToken() *lexer.Token {
-	if p.tokenPos+1 >= len(p.tokens) {
-		return nil
+func (p *parser) parseValue() (runtime.Value, error) {
+	valueToken := p.readToken()
+	switch valueToken.TokenType {
+	case lexer.TokenLiteralString:
+		return runtime.StringValue{
+			Val: valueToken.Value,
+		}, nil
+	case lexer.TokenLiteralInt:
+		intVal, err := strconv.Atoi(valueToken.Value)
+		if err != nil {
+			return nil, fmt.Errorf("invalid number value: %s", valueToken.Value)
+		}
+		return runtime.NumberValue{
+			Val: intVal,
+		}, nil
+	case lexer.TokenIdentifier:
+		// TODO ?
+		return runtime.VariableValue{
+			VarName: valueToken.Value,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unexpected token as value: %s", lexer.TokenNames[valueToken.TokenType])
 	}
-	return p.tokens[p.tokenPos+1]
+}
+
+// Peek the nth next token in tokens.
+// If there are no more tokens, a lexer.TokenEOF is returned.
+func (p *parser) peekTokenN(n int) *lexer.Token {
+	if p.tokenPos+n >= len(p.tokens) {
+		return &lexer.Token{
+			TokenType: lexer.TokenEOF,
+			Value:     "",
+		}
+	}
+	return p.tokens[p.tokenPos+n]
+}
+
+// Peek the next token in tokens.
+func (p *parser) peekToken() *lexer.Token {
+	return p.peekTokenN(1)
+}
+
+// Read the next token in tokens and increment tokenPos.
+func (p *parser) readToken() *lexer.Token {
+	next := p.peekToken()
+	p.tokenPos++
+	return next
 }

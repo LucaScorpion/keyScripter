@@ -1,6 +1,6 @@
 package runtime
 
-type fnArgs []interface{}
+type fnArgs []Value
 
 type RuntimeFn func()
 
