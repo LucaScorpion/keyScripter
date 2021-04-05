@@ -1,6 +1,10 @@
 # keyScripter
 
-A tool to script keyboard and mouse inputs for Windows.
+Script keyboard and mouse inputs for Windows.
+
+***This tool is still in early development. Everything about the tool and language can change at any time.***
+
+This tool is aimed purely at Windows, with no plans for supporting other operating systems. This is because it injects inputs by interfacing with the Win32 API (specifically [SendInput](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)).
 
 ## Usage
 
