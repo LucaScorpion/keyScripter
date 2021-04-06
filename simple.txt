@@ -3,7 +3,7 @@ print "Starting script..."
 sleep 10 # milliseconds
 
 msg = "Assignment"
-# print msg
+print msg
 
 t = 100
 sleep t

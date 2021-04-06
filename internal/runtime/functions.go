@@ -36,9 +36,8 @@ func newScriptFn(fn interface{}) *ScriptFn {
 }
 
 func (fn *ScriptFn) Validate(args []Kind) error {
-	// TODO: If variadic, arg count can be 1 less than len(fn.params)
 	// Check if the argument count matches.
-	if len(args) < len(fn.params) || (!fn.variadic && len(args) > len(fn.params)) {
+	if (fn.variadic && len(args) < len(fn.params)-1) || (!fn.variadic && len(args) != len(fn.params)) {
 		return fmt.Errorf("mismatched argument count, expected %d but got %d", len(fn.params), len(args))
 	}
 
