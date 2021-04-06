@@ -37,6 +37,7 @@ const (
 	TokenIdentifier
 	TokenLiteralString
 	TokenLiteralInt
+	TokenLiteralHex
 	tokenValueEnd
 
 	TokenAssign
@@ -52,6 +53,7 @@ var tokenNames = map[TokenType]string{
 	TokenIdentifier:    "Identifier",
 	TokenLiteralString: "String",
 	TokenLiteralInt:    "Int",
+	TokenLiteralHex:    "Hex",
 
 	TokenAssign: "Assign",
 }
@@ -62,4 +64,5 @@ const (
 	newline      rune = '\n'
 	quote        rune = '"'
 	equals       rune = '='
+	hex          rune = 'x'
 )

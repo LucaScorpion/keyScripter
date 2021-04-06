@@ -2,14 +2,14 @@
 print "Starting script..."
 sleep 10 # milliseconds
 
-msg = "Assignment"
-print msg
-
 t = 100
 sleep t
 
 # aA
-vKeyPress   65
-vKeyDown    16
-vKeyPress   65
-vKeyUp      16
+a = 0x41
+shift = 0x10
+vKeyPress   a
+vKeyDown    shift
+vKeyPress   a
+vKeyUp      shift
+vKeyPress   a

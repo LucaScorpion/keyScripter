@@ -167,6 +167,12 @@ func (p *parser) parseValue() (runtime.Value, error) {
 			return nil, fmt.Errorf("invalid number value: %s", valueToken.Value)
 		}
 		return runtime.NewNumberValue(intVal), nil
+	case lexer.TokenLiteralHex:
+		intVal, err := strconv.ParseInt(valueToken.Value, 0, 0)
+		if err != nil {
+			return nil, fmt.Errorf("invalid number value: %s", valueToken.Value)
+		}
+		return runtime.NewNumberValue(int(intVal)), nil
 	case lexer.TokenIdentifier:
 		return runtime.NewVariableValue(valueToken.Value), nil
 	default:

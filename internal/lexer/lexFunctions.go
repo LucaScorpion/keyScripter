@@ -27,9 +27,7 @@ func lexBegin(l *lexer) lexFn {
 		l.emit(TokenIdentifier)
 		return lexBegin
 	case unicode.IsNumber(nextRune):
-		l.readWhile(unicode.IsNumber)
-		l.emit(TokenLiteralInt)
-		return lexBegin
+		return lexNumberLiteral
 	case nextRune == quote:
 		return lexStringLiteral
 	case nextRune == equals:
@@ -61,5 +59,21 @@ func lexStringLiteral(l *lexer) lexFn {
 	}
 
 	l.emit(TokenLiteralString)
+	return lexBegin
+}
+
+func lexNumberLiteral(l *lexer) lexFn {
+	// Leading number
+	l.readRune()
+
+	if l.peekRune() == hex {
+		l.readRune()
+		l.readWhile(unicode.IsNumber)
+		l.emit(TokenLiteralHex)
+	} else {
+		l.readWhile(unicode.IsNumber)
+		l.emit(TokenLiteralInt)
+	}
+
 	return lexBegin
 }
