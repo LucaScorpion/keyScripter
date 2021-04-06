@@ -156,8 +156,11 @@ func (p *parser) parseValue() (runtime.Value, error) {
 	valueToken := p.readToken()
 	switch valueToken.TokenType {
 	case lexer.TokenLiteralString:
-		// TODO: Process value, remove quotes, escape sequences.
-		return runtime.NewStringValue(valueToken.Value), nil
+		str, err := processString(valueToken.Value)
+		if err != nil {
+			return nil, err
+		}
+		return runtime.NewStringValue(str), nil
 	case lexer.TokenLiteralInt:
 		intVal, err := strconv.Atoi(valueToken.Value)
 		if err != nil {

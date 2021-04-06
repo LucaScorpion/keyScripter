@@ -7,3 +7,5 @@ print msg
 
 t = 100
 sleep t
+
+print "A\n\tmultiline\nmessage"
