@@ -10,16 +10,18 @@ type Token struct {
 	Value     string
 	pos       int
 	length    int
-
-	// TODO: Store Name (TokenName) here as well
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("[%s] (%d, %d) %s", TokenNames[t.TokenType], t.pos, t.length, strings.TrimSpace(t.Value))
+	return fmt.Sprintf("[%s] (%d, %d) %s", t.Name(), t.pos, t.length, strings.TrimSpace(t.Value))
 }
 
 func (t *Token) IsValueToken() bool {
 	return t.TokenType > tokenValueStart && t.TokenType < tokenValueEnd
+}
+
+func (t *Token) Name() string {
+	return tokenNames[t.TokenType]
 }
 
 type TokenType int
@@ -40,7 +42,7 @@ const (
 	TokenAssign
 )
 
-var TokenNames = map[TokenType]string{
+var tokenNames = map[TokenType]string{
 	TokenError:   "Error",
 	TokenEOF:     "EOF",
 	TokenNewline: "Newline",

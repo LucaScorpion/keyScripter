@@ -71,7 +71,7 @@ func (p *parser) parseTokens() error {
 		case lexer.TokenNewline:
 			p.readToken()
 		default:
-			return fmt.Errorf("unexpected token: %s", lexer.TokenNames[nextToken.TokenType])
+			return fmt.Errorf("unexpected token: %s", nextToken.Name())
 		}
 	}
 	return nil
@@ -104,9 +104,9 @@ func (p *parser) parseAssignment() error {
 	p.ctx.SetValue(varName, val)
 
 	// An assignment must be followed by a newline or EOF.
-	endToken := p.readToken().TokenType
-	if endToken != lexer.TokenNewline && endToken != lexer.TokenEOF {
-		return fmt.Errorf("unexpected %s token after assignment", lexer.TokenNames[endToken])
+	endToken := p.readToken()
+	if endToken.TokenType != lexer.TokenNewline && endToken.TokenType != lexer.TokenEOF {
+		return fmt.Errorf("unexpected %s token after assignment", endToken.Name())
 	}
 	return nil
 }
@@ -131,7 +131,7 @@ func (p *parser) parseFunc() error {
 		} else if next.TokenType == lexer.TokenComment {
 			p.readToken()
 		} else {
-			return fmt.Errorf("unexpected token in function call: %s", lexer.TokenNames[next.TokenType])
+			return fmt.Errorf("unexpected token in function call: %s", next.Name())
 		}
 	}
 
@@ -170,7 +170,7 @@ func (p *parser) parseValue() (runtime.Value, error) {
 	case lexer.TokenIdentifier:
 		return runtime.NewVariableValue(valueToken.Value), nil
 	default:
-		return nil, fmt.Errorf("unexpected token as value: %s", lexer.TokenNames[valueToken.TokenType])
+		return nil, fmt.Errorf("unexpected token as value: %s", valueToken.Name())
 	}
 }
 
