@@ -6,8 +6,11 @@ import (
 )
 
 var Functions = map[string]*ScriptFn{
-	"print": newScriptFn(printFn),
-	"sleep": newScriptFn(sleepFn),
+	"print":     newScriptFn(printFn),
+	"sleep":     newScriptFn(sleepFn),
+	"vKeyDown":  newScriptFn(vKeyDown),
+	"vKeyUp":    newScriptFn(vKeyUp),
+	"vKeyPress": newScriptFn(vKeyPress),
 }
 
 type ScriptFn struct {

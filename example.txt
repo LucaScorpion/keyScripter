@@ -1,21 +1,15 @@
-# This is a comment.
+# Start
+print "Starting script..."
+sleep 10 # milliseconds
 
-# Press a key.
-press "q"
+msg = "Assignment"
+print msg
 
-# Modifiers
-# ^ ctrl
-# [ alt
-# ] right alt
-# % super (win)
-press "%r"
+t = 100
+sleep t
 
-# Special keys
-# TODO: think of syntax for this
-press "\esc"
-
-# Type a string
-type "thing\nline\"escaped\""
-
-# Wait 500 milliseconds.
-sleep 500
+# aA
+vKeyPress   65
+vKeyDown    16
+vKeyPress   65
+vKeyUp      16
