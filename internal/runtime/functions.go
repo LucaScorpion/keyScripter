@@ -45,7 +45,7 @@ func (fn *ScriptFn) Validate(args []Kind) error {
 	for argI := 0; argI < len(args); argI++ {
 		// Get the param index, to account for variadic parameters.
 		paramI := argI
-		if argI > len(fn.params) {
+		if argI > len(fn.params)-1 {
 			paramI = len(fn.params) - 1
 		}
 
@@ -60,7 +60,6 @@ func (fn *ScriptFn) Validate(args []Kind) error {
 }
 
 func (fn *ScriptFn) call(args []Value, ctx *Context) {
-	// TODO: If variadic, arg count can be 1 less than len(fn.params)
 	in := make([]reflect.Value, len(args))
 	for i := 0; i < len(args); i++ {
 		in[i] = reflect.ValueOf(args[i].Value(ctx))

@@ -13,20 +13,22 @@ print "Done!"
 
 ### print
 
-Print a value to the output. The first argument of `print` must be a string, which is interpreted as a [Go format](https://golang.org/pkg/fmt/) string. The rest of the arguments can be any value, and are used as values for the format. To use a value in the format string, use `%v`.
+Print zero or more a value to the output. All arguments are concatenated together with a space.
 
 Example:
 
 ```
 print "A simple print."
-print "%v is replaced by the passed %v." 42 "values" 
+print
+print "Concatenate multiple" 42 "values" 123
 ```
 
 Output:
 
 ```
 A simple print.
-42 is replaced by the passed values.
+
+Concatenate multiple 42 values 123
 ```
 
 ### sleep
