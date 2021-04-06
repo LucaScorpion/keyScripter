@@ -10,35 +10,35 @@ func lexBegin(l *lexer) lexFn {
 	l.discard()
 
 	nextRune := l.peekRune()
-
-	if nextRune == eof {
+	switch {
+	case nextRune == eof:
 		l.emit(TokenEOF)
 		return nil
-	} else if nextRune == newline {
+	case nextRune == newline:
 		l.readRune()
 		l.emit(TokenNewline)
 		return lexBegin
-	} else if nextRune == commentStart {
+	case nextRune == commentStart:
 		l.readLine()
 		l.emit(TokenComment)
 		return lexBegin
-	} else if unicode.IsLetter(nextRune) || nextRune == '_' {
+	case unicode.IsLetter(nextRune) || nextRune == '_':
 		l.readAlphaNum()
 		l.emit(TokenIdentifier)
 		return lexBegin
-	} else if unicode.IsNumber(nextRune) {
+	case unicode.IsNumber(nextRune):
 		l.readWhile(unicode.IsNumber)
 		l.emit(TokenLiteralInt)
 		return lexBegin
-	} else if nextRune == quote {
+	case nextRune == quote:
 		return lexStringLiteral
-	} else if nextRune == equals {
+	case nextRune == equals:
 		l.readRune()
 		l.emit(TokenAssign)
 		return lexBegin
+	default:
+		return l.errorf("unexpected character: '%s'", string(nextRune))
 	}
-
-	return l.errorf("unexpected character: '%s'", string(nextRune))
 }
 
 func lexStringLiteral(l *lexer) lexFn {
