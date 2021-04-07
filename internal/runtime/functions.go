@@ -8,6 +8,7 @@ import (
 var Functions = map[string]*ScriptFn{
 	"print":     newScriptFn(printFn),
 	"sleep":     newScriptFn(sleepFn),
+	"pause":     newScriptFn(pauseFn),
 	"vKeyDown":  newScriptFn(vKeyDown),
 	"vKeyUp":    newScriptFn(vKeyUp),
 	"vKeyPress": newScriptFn(vKeyPress),

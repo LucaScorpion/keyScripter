@@ -34,6 +34,24 @@ vKeyPress a
 
 ## Functions
 
+### `pause`
+
+Pause script execution. This waits for the user to press enter before resuming.
+
+```
+print "Before"
+pause
+print "After"
+```
+
+Output:
+
+```
+Before
+Press enter to continue...
+After
+```
+
 ### `print`
 
 Print zero or more a values to the output. All arguments are concatenated together with a space.
