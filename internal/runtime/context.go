@@ -1,25 +1,24 @@
 package runtime
 
-import "fmt"
-
 type Context struct {
-	values map[string]Value
+	values map[string]ConcreteValue
 }
 
 func NewContext() *Context {
 	return &Context{
-		values: make(map[string]Value),
+		values: make(map[string]ConcreteValue),
 	}
 }
 
-func (c *Context) SetValue(name string, v Value) {
-	if va, ok := v.(VariableValue); ok {
-		panic(fmt.Errorf("context can only store concrete values, tried to store variable: %s", va.ref))
-	}
-
+func (c *Context) SetValue(name string, v ConcreteValue) {
 	c.values[name] = v
 }
 
-func (c *Context) GetValue(name string) Value {
+func (c *Context) GetValue(name string) ConcreteValue {
 	return c.values[name]
+}
+
+func (c *Context) HasValue(name string) bool {
+	_, ok := c.values[name]
+	return ok
 }

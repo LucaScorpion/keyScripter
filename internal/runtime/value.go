@@ -1,15 +1,5 @@
 package runtime
 
-import (
-	"fmt"
-	"reflect"
-)
-
-type Value interface {
-	Kind(ctx *Context) Kind
-	Value(ctx *Context) interface{}
-}
-
 type Kind string
 
 const (
@@ -18,58 +8,31 @@ const (
 	AnyKind    Kind = "any"
 )
 
-var kindMap = map[reflect.Kind]Kind{
-	reflect.String:    StringKind,
-	reflect.Int:       NumberKind,
-	reflect.Interface: AnyKind,
+type Value interface {
+	Resolve(ctx *Context) ConcreteValue
 }
 
-func kindFromType(t reflect.Type) Kind {
-	k := t.Kind()
-	if r, ok := kindMap[k]; ok {
-		return r
+type ConcreteValue struct {
+	Kind  Kind
+	Value interface{}
+}
+
+func NewStringValue(val string) ConcreteValue {
+	return ConcreteValue{
+		Kind:  StringKind,
+		Value: val,
 	}
+}
 
-	if k == reflect.Slice {
-		// Don't recurse here, since we can only handle 1-deep slice types.
-		if r, ok := kindMap[t.Elem().Kind()]; ok {
-			return r
-		}
+func NewNumberValue(val int) ConcreteValue {
+	return ConcreteValue{
+		Kind:  NumberKind,
+		Value: val,
 	}
-
-	panic(fmt.Errorf("invalid value kind: %s", k.String()))
 }
 
-type StringValue struct {
-	val string
-}
-
-func NewStringValue(val string) StringValue {
-	return StringValue{val: val}
-}
-
-func (v StringValue) Kind(_ *Context) Kind {
-	return StringKind
-}
-
-func (v StringValue) Value(_ *Context) interface{} {
-	return v.val
-}
-
-type NumberValue struct {
-	val int
-}
-
-func NewNumberValue(val int) NumberValue {
-	return NumberValue{val: val}
-}
-
-func (v NumberValue) Kind(_ *Context) Kind {
-	return NumberKind
-}
-
-func (v NumberValue) Value(_ *Context) interface{} {
-	return v.val
+func (v ConcreteValue) Resolve(_ *Context) ConcreteValue {
+	return v
 }
 
 type VariableValue struct {
@@ -80,10 +43,6 @@ func NewVariableValue(ref string) VariableValue {
 	return VariableValue{ref: ref}
 }
 
-func (v VariableValue) Kind(ctx *Context) Kind {
-	return ctx.GetValue(v.ref).Kind(ctx)
-}
-
-func (v VariableValue) Value(ctx *Context) interface{} {
-	return ctx.GetValue(v.ref).Value(ctx)
+func (v VariableValue) Resolve(ctx *Context) ConcreteValue {
+	return ctx.GetValue(v.ref)
 }

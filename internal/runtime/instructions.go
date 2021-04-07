@@ -19,5 +19,5 @@ type Assignment struct {
 }
 
 func (a Assignment) Execute(ctx *Context) {
-	ctx.SetValue(a.Name, a.Val)
+	ctx.SetValue(a.Name, a.Val.Resolve(ctx))
 }

@@ -100,8 +100,8 @@ func (p *parser) parseAssignment() error {
 		Val:  val,
 	})
 
-	// Store the value in the context.
-	p.ctx.SetValue(varName, val)
+	// Store the value in the context to keep track of the kind.
+	p.ctx.SetValue(varName, val.Resolve(p.ctx))
 
 	// An assignment must be followed by a newline or EOF.
 	endToken := p.readToken()
@@ -138,7 +138,7 @@ func (p *parser) parseFunc() error {
 	// Validate the function.
 	argKinds := make([]runtime.Kind, len(argValues))
 	for i := 0; i < len(argValues); i++ {
-		argKinds[i] = argValues[i].Kind(p.ctx)
+		argKinds[i] = argValues[i].Resolve(p.ctx).Kind
 	}
 	if err := fn.Validate(argKinds); err != nil {
 		return err
@@ -174,6 +174,10 @@ func (p *parser) parseValue() (runtime.Value, error) {
 		}
 		return runtime.NewNumberValue(int(intVal)), nil
 	case lexer.TokenIdentifier:
+		// Check if the referenced value is defined in the current context.
+		if !p.ctx.HasValue(valueToken.Value) {
+			return nil, fmt.Errorf("undefined value: %s", valueToken.Value)
+		}
 		return runtime.NewVariableValue(valueToken.Value), nil
 	default:
 		return nil, fmt.Errorf("unexpected token as value: %s", valueToken.Name())

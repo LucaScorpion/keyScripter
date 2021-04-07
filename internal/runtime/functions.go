@@ -38,6 +38,28 @@ func newScriptFn(fn interface{}) *ScriptFn {
 	return res
 }
 
+var kindMap = map[reflect.Kind]Kind{
+	reflect.String:    StringKind,
+	reflect.Int:       NumberKind,
+	reflect.Interface: AnyKind,
+}
+
+func kindFromType(t reflect.Type) Kind {
+	k := t.Kind()
+	if r, ok := kindMap[k]; ok {
+		return r
+	}
+
+	if k == reflect.Slice {
+		// Don't recurse here, since we can only handle 1-deep slice types.
+		if r, ok := kindMap[t.Elem().Kind()]; ok {
+			return r
+		}
+	}
+
+	panic(fmt.Errorf("invalid value kind: %s", k.String()))
+}
+
 func (fn *ScriptFn) Validate(args []Kind) error {
 	// Check if the argument count matches.
 	if (fn.variadic && len(args) < len(fn.params)-1) || (!fn.variadic && len(args) != len(fn.params)) {
@@ -65,7 +87,7 @@ func (fn *ScriptFn) Validate(args []Kind) error {
 func (fn *ScriptFn) call(args []Value, ctx *Context) {
 	in := make([]reflect.Value, len(args))
 	for i := 0; i < len(args); i++ {
-		in[i] = reflect.ValueOf(args[i].Value(ctx))
+		in[i] = reflect.ValueOf(args[i].Resolve(ctx).Value)
 	}
 
 	fn.rawFn.Call(in)
