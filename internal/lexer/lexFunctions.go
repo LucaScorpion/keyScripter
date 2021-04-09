@@ -4,19 +4,30 @@ import (
 	"unicode"
 )
 
+var oneRuneTokens = map[rune]TokenType{
+	newline:    TokenNewline,
+	equals:     TokenAssign,
+	parenOpen:  TokenParenOpen,
+	parenClose: TokenParenClose,
+	braceOpen:  TokenBraceOpen,
+	braceClose: TokenBraceClose,
+}
+
 func lexBegin(l *lexer) lexFn {
 	// Discard leading whitespaces.
 	l.readSpace()
 	l.discard()
 
 	nextRune := l.peekRune()
+	oneRuneToken, isOneRuneToken := oneRuneTokens[nextRune]
+
 	switch {
 	case nextRune == eof:
 		l.emit(TokenEOF)
 		return nil
-	case nextRune == newline:
+	case isOneRuneToken:
 		l.readRune()
-		l.emit(TokenNewline)
+		l.emit(oneRuneToken)
 		return lexBegin
 	case nextRune == commentStart:
 		l.readLine()
@@ -30,10 +41,6 @@ func lexBegin(l *lexer) lexFn {
 		return lexNumberLiteral
 	case nextRune == quote:
 		return lexStringLiteral
-	case nextRune == equals:
-		l.readRune()
-		l.emit(TokenAssign)
-		return lexBegin
 	default:
 		return l.errorf("unexpected character: '%s'", string(nextRune))
 	}

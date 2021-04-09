@@ -6,8 +6,8 @@ t = 100
 sleep t
 
 # aA
-a = 0x41
-shift = 0x10
+a           = 0x41
+shift       = 0x10
 vKeyPress   a
 vKeyDown    shift
 vKeyPress   a

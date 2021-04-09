@@ -8,7 +8,7 @@ import (
 
 type lexer struct {
 	input  string
-	Tokens chan *Token
+	Tokens chan *Token // TODO: Just keep a slice of tokens instead of a channel.
 	state  lexFn
 
 	start   int
@@ -25,7 +25,7 @@ func NewLexer(input string) *lexer {
 	}
 }
 
-// Start the lexer, emitting tokens to the Tokens channel.
+// Run the lexer, emitting tokens to the Tokens channel.
 func (l *lexer) Run() {
 	for state := l.state; state != nil; {
 		state = state(l)

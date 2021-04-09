@@ -21,7 +21,11 @@ func (t *Token) IsValueToken() bool {
 }
 
 func (t *Token) Name() string {
-	return tokenNames[t.TokenType]
+	return TokenName(t.TokenType)
+}
+
+func TokenName(t TokenType) string {
+	return tokenNames[t]
 }
 
 type TokenType int
@@ -41,6 +45,10 @@ const (
 	tokenValueEnd
 
 	TokenAssign
+	TokenParenOpen
+	TokenParenClose
+	TokenBraceOpen
+	TokenBraceClose
 )
 
 var tokenNames = map[TokenType]string{
@@ -55,7 +63,11 @@ var tokenNames = map[TokenType]string{
 	TokenLiteralInt:    "Int",
 	TokenLiteralHex:    "Hex",
 
-	TokenAssign: "Assign",
+	TokenAssign:     "Assign",
+	TokenParenOpen:  "(",
+	TokenParenClose: ")",
+	TokenBraceOpen:  "{",
+	TokenBraceClose: "}",
 }
 
 const (
@@ -65,4 +77,8 @@ const (
 	quote        rune = '"'
 	equals       rune = '='
 	hex          rune = 'x'
+	parenOpen    rune = '('
+	parenClose   rune = ')'
+	braceOpen    rune = '{'
+	braceClose   rune = '}'
 )

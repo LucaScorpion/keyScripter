@@ -1,7 +1,10 @@
 package runtime
 
+import "fmt"
+
 type Context struct {
 	values map[string]ConcreteValue
+	parent *Context
 }
 
 func NewContext() *Context {
@@ -15,7 +18,13 @@ func (c *Context) SetValue(name string, v ConcreteValue) {
 }
 
 func (c *Context) GetValue(name string) ConcreteValue {
-	return c.values[name]
+	if v, ok := c.values[name]; ok {
+		return v
+	}
+	if c.parent != nil {
+		return c.parent.GetValue(name)
+	}
+	panic(fmt.Errorf("trying to get undefined value from context: %s", name))
 }
 
 func (c *Context) HasValue(name string) bool {

@@ -6,6 +6,7 @@ const (
 	StringKind Kind = "string"
 	NumberKind Kind = "number"
 	AnyKind    Kind = "any"
+	FunctionKind Kind = "function"
 )
 
 type Value interface {
@@ -13,26 +14,30 @@ type Value interface {
 }
 
 type ConcreteValue struct {
-	Kind  Kind
-	Value interface{}
+	kind  Kind
+	value interface{}
 }
 
 func NewStringValue(val string) ConcreteValue {
 	return ConcreteValue{
-		Kind:  StringKind,
-		Value: val,
+		kind:  StringKind,
+		value: val,
 	}
 }
 
 func NewNumberValue(val int) ConcreteValue {
 	return ConcreteValue{
-		Kind:  NumberKind,
-		Value: val,
+		kind:  NumberKind,
+		value: val,
 	}
 }
 
 func (v ConcreteValue) Resolve(_ *Context) ConcreteValue {
 	return v
+}
+
+func (v ConcreteValue) Kind() Kind {
+	return v.kind
 }
 
 type VariableValue struct {

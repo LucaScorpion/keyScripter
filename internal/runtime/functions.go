@@ -88,7 +88,7 @@ func (fn *ScriptFn) Validate(args []Kind) error {
 func (fn *ScriptFn) call(args []Value, ctx *Context) {
 	in := make([]reflect.Value, len(args))
 	for i := 0; i < len(args); i++ {
-		in[i] = reflect.ValueOf(args[i].Resolve(ctx).Value)
+		in[i] = reflect.ValueOf(args[i].Resolve(ctx).value)
 	}
 
 	fn.rawFn.Call(in)
