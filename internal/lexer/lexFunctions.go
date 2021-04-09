@@ -10,8 +10,8 @@ var oneRuneTokens = map[rune]TokenType{
 	equals:     TokenAssign,
 	parenOpen:  TokenParenOpen,
 	parenClose: TokenParenClose,
-	braceOpen:  TokenBraceOpen,
-	braceClose: TokenBraceClose,
+	blockStart: TokenBlockStart,
+	blockEnd:   TokenBlockEnd,
 }
 
 func lexBegin(l *lexer) (lexFn, error) {

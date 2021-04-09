@@ -17,7 +17,7 @@ func (t Token) String() string {
 }
 
 func (t *Token) IsValueToken() bool {
-	return t.TokenType > tokenValueStart && t.TokenType < tokenValueEnd
+	return t.TokenType > beginValueTokens && t.TokenType < endValueTokens
 }
 
 func (t *Token) Name() string {
@@ -36,18 +36,18 @@ const (
 
 	TokenComment
 
-	tokenValueStart
+	beginValueTokens
 	TokenIdentifier
 	TokenLiteralString
 	TokenLiteralInt
 	TokenLiteralHex
-	tokenValueEnd
+	endValueTokens
 
 	TokenAssign
 	TokenParenOpen
 	TokenParenClose
-	TokenBraceOpen
-	TokenBraceClose
+	TokenBlockStart
+	TokenBlockEnd
 )
 
 var tokenNames = map[TokenType]string{
@@ -64,8 +64,8 @@ var tokenNames = map[TokenType]string{
 	TokenAssign:     "Assign",
 	TokenParenOpen:  "(",
 	TokenParenClose: ")",
-	TokenBraceOpen:  "{",
-	TokenBraceClose: "}",
+	TokenBlockStart: "{",
+	TokenBlockEnd:   "}",
 }
 
 const (
@@ -77,6 +77,6 @@ const (
 	hex          rune = 'x'
 	parenOpen    rune = '('
 	parenClose   rune = ')'
-	braceOpen    rune = '{'
-	braceClose   rune = '}'
+	blockStart   rune = '{'
+	blockEnd     rune = '}'
 )

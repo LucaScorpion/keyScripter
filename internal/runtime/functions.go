@@ -61,21 +61,29 @@ func kindFromType(t reflect.Type) Kind {
 	panic(fmt.Errorf("invalid value kind: %s", k.String()))
 }
 
-func (fn *ScriptFn) Validate(args []Kind) error {
+func (f *ScriptFn) ParamKind(index int) Kind {
+	clampedI := index
+	if index >= len(f.params) && f.variadic {
+		clampedI = len(f.params) - 1
+	}
+	return f.params[clampedI]
+}
+
+func (f *ScriptFn) Validate(args []Kind) error {
 	// Check if the argument count matches.
-	if (fn.variadic && len(args) < len(fn.params)-1) || (!fn.variadic && len(args) != len(fn.params)) {
-		return fmt.Errorf("mismatched argument count, expected %d but got %d", len(fn.params), len(args))
+	if (f.variadic && len(args) < len(f.params)-1) || (!f.variadic && len(args) != len(f.params)) {
+		return fmt.Errorf("mismatched argument count, expected %d but got %d", len(f.params), len(args))
 	}
 
 	// Check if the argument types match.
 	for argI := 0; argI < len(args); argI++ {
 		// Get the param index, to account for variadic parameters.
 		paramI := argI
-		if argI > len(fn.params)-1 {
-			paramI = len(fn.params) - 1
+		if argI > len(f.params)-1 {
+			paramI = len(f.params) - 1
 		}
 
-		paramKind := fn.params[paramI]
+		paramKind := f.params[paramI]
 		argKind := args[argI]
 		if paramKind != AnyKind && paramKind != argKind {
 			return fmt.Errorf("mismatched argument type, expected %s but got %s", paramKind, argKind)
@@ -85,11 +93,11 @@ func (fn *ScriptFn) Validate(args []Kind) error {
 	return nil
 }
 
-func (fn *ScriptFn) call(args []Value, ctx *Context) {
+func (f *ScriptFn) call(args []Value, ctx *Context) {
 	in := make([]reflect.Value, len(args))
 	for i := 0; i < len(args); i++ {
 		in[i] = reflect.ValueOf(args[i].Resolve(ctx).value)
 	}
 
-	fn.rawFn.Call(in)
+	f.rawFn.Call(in)
 }

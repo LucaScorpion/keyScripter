@@ -9,7 +9,7 @@ func NewScript(instructions []Instruction) *Script {
 }
 
 func (s *Script) Run() {
-	ctx := NewContext()
+	ctx := NewContext(nil)
 	for _, f := range s.instructions {
 		f.Execute(ctx)
 	}

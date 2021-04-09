@@ -20,7 +20,7 @@ func Parse(input string) (*runtime.Script, error) {
 
 	p := &parser{
 		tokens: lex.Tokens(),
-		ctx:    runtime.NewContext(),
+		ctx:    runtime.NewContext(nil),
 	}
 
 	if instr, err := p.parseInstructions(); err != nil {

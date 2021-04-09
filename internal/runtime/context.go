@@ -7,10 +7,15 @@ type Context struct {
 	parent *Context
 }
 
-func NewContext() *Context {
+func NewContext(parent *Context) *Context {
 	return &Context{
 		values: make(map[string]ConcreteValue),
+		parent: parent,
 	}
+}
+
+func (c *Context) Parent() *Context {
+	return c.parent
 }
 
 func (c *Context) SetValue(name string, v ConcreteValue) {
@@ -28,6 +33,11 @@ func (c *Context) GetValue(name string) ConcreteValue {
 }
 
 func (c *Context) HasValue(name string) bool {
-	_, ok := c.values[name]
-	return ok
+	if _, ok := c.values[name]; ok {
+		return ok
+	}
+	if c.parent != nil {
+		return c.parent.HasValue(name)
+	}
+	return false
 }

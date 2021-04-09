@@ -32,6 +32,24 @@ func NewNumberValue(val int) ConcreteValue {
 	}
 }
 
+func NewFunctionValue(val []Instruction) ConcreteValue {
+	return ConcreteValue{
+		kind: FunctionKind,
+		value: func(ctx *Context) {
+			funcCtx := NewContext(ctx)
+			for _, i := range val {
+				i.Execute(funcCtx)
+			}
+		},
+	}
+}
+
+func NewEmptyValue(kind Kind) ConcreteValue {
+	return ConcreteValue{
+		kind: kind,
+	}
+}
+
 func (v ConcreteValue) Resolve(_ *Context) ConcreteValue {
 	return v
 }
@@ -45,7 +63,13 @@ type VariableValue struct {
 }
 
 func NewVariableValue(ref string) VariableValue {
-	return VariableValue{ref: ref}
+	return VariableValue{
+		ref: ref,
+	}
+}
+
+func (v VariableValue) Ref() string {
+	return v.ref
 }
 
 func (v VariableValue) Resolve(ctx *Context) ConcreteValue {

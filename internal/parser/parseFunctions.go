@@ -19,6 +19,18 @@ func (p *parser) parseInstructions() ([]runtime.Instruction, error) {
 	return instr, nil
 }
 
+func (p *parser) parseInstructionBlock() ([]runtime.Instruction, error) {
+	var instr []runtime.Instruction
+	for nextToken := p.peekToken(); nextToken.TokenType != lexer.TokenEOF && nextToken.TokenType != lexer.TokenBlockEnd; nextToken = p.peekToken() {
+		if i, err := p.parseInstruction(); err != nil {
+			return nil, err
+		} else if i != nil {
+			instr = append(instr, i)
+		}
+	}
+	return instr, nil
+}
+
 func (p *parser) parseInstruction() (runtime.Instruction, error) {
 	nextToken := p.peekToken()
 	switch nextToken.TokenType {
@@ -97,7 +109,16 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 	// Validate the function.
 	argKinds := make([]runtime.Kind, len(argValues))
 	for i := 0; i < len(argValues); i++ {
-		argKinds[i] = argValues[i].Resolve(p.ctx).Kind()
+		argI := argValues[i]
+		resolvedKind := argI.Resolve(p.ctx).Kind()
+
+		// For "any" kind args, change their kind in context to match the function's param kind.
+		if resolvedKind == runtime.AnyKind {
+			resolvedKind = fn.ParamKind(i)
+			p.ctx.SetValue(argI.(runtime.VariableValue).Ref(), runtime.NewEmptyValue(resolvedKind))
+		}
+
+		argKinds[i] = resolvedKind
 	}
 	if err := fn.Validate(argKinds); err != nil {
 		return nil, err
@@ -132,7 +153,7 @@ func (p *parser) parseValue() (runtime.Value, error) {
 		}
 		return runtime.NewNumberValue(int(intVal)), nil
 	case lexer.TokenIdentifier:
-		// Check if the referenced value is defined in the current context.
+		// Check if the referenced value is defined in the context.
 		if !p.ctx.HasValue(valueToken.Value) {
 			return nil, fmt.Errorf("undefined value: %s", valueToken.Value)
 		}
@@ -146,6 +167,10 @@ func (p *parser) parseValue() (runtime.Value, error) {
 
 func (p *parser) parseFuncDef() (runtime.Value, error) {
 	// The opening paren is already read.
+
+	// Start a new parser context.
+	p.ctx = runtime.NewContext(p.ctx)
+
 	// Get the parameter names.
 	var paramNames []string
 	var next *lexer.Token
@@ -153,16 +178,32 @@ func (p *parser) parseFuncDef() (runtime.Value, error) {
 		// Consume the token, store the name.
 		p.readToken()
 		paramNames = append(paramNames, next.Value)
+
+		// Store the parameter in context as any kind.
+		p.ctx.SetValue(next.Value, runtime.NewEmptyValue(runtime.AnyKind))
 	}
 
 	// End of parameters, start of function body.
 	if _, err := p.expectToken(lexer.TokenParenClose); err != nil {
 		return nil, err
 	}
-	if _, err := p.expectToken(lexer.TokenBraceOpen); err != nil {
+	if _, err := p.expectToken(lexer.TokenBlockStart); err != nil {
 		return nil, err
 	}
 
-	// TODO
-	return nil, nil
+	// Function body.
+	body, err := p.parseInstructionBlock()
+	if err != nil {
+		return nil, err
+	}
+
+	// Function body end.
+	if _, err := p.expectToken(lexer.TokenBlockEnd); err != nil {
+		return nil, err
+	}
+
+	// Restore the parser context.
+	p.ctx = p.ctx.Parent()
+
+	return runtime.NewFunctionValue(body), nil
 }
