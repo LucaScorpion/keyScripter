@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 	"github.com/LucaScorpion/keyScripter/internal/lexer"
 	"github.com/LucaScorpion/keyScripter/internal/runtime"
@@ -14,38 +13,21 @@ type parser struct {
 }
 
 func Parse(input string) (*runtime.Script, error) {
-	if tokens, err := lexTokens(input); err != nil {
+	lex := lexer.NewLexer(input)
+	if err := lex.Run(); err != nil {
+		return nil, err
+	}
+
+	p := &parser{
+		tokens: lex.Tokens(),
+		ctx:    runtime.NewContext(),
+	}
+
+	if instr, err := p.parseInstructions(); err != nil {
 		return nil, err
 	} else {
-		p := &parser{
-			tokens: tokens,
-			ctx:    runtime.NewContext(),
-		}
-
-		if instr, err := p.parseInstructions(); err != nil {
-			return nil, err
-		} else {
-			return runtime.NewScript(instr), nil
-		}
+		return runtime.NewScript(instr), nil
 	}
-}
-
-// TODO: Move this logic to the lexer.
-func lexTokens(input string) ([]*lexer.Token, error) {
-	// Create and run the lexer.
-	l := lexer.NewLexer(input)
-	go l.Run()
-
-	// Collect all the tokens.
-	var tokens []*lexer.Token
-	for t := range l.Tokens {
-		tokens = append(tokens, t)
-		if t.TokenType == lexer.TokenError {
-			return nil, errors.New(t.Value)
-		}
-	}
-
-	return tokens, nil
 }
 
 // Peek the nth next token in tokens.

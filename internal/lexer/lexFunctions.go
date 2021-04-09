@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"unicode"
 )
 
@@ -13,7 +14,7 @@ var oneRuneTokens = map[rune]TokenType{
 	braceClose: TokenBraceClose,
 }
 
-func lexBegin(l *lexer) lexFn {
+func lexBegin(l *lexer) (lexFn, error) {
 	// Discard leading whitespaces.
 	l.readSpace()
 	l.discard()
@@ -24,29 +25,29 @@ func lexBegin(l *lexer) lexFn {
 	switch {
 	case nextRune == eof:
 		l.emit(TokenEOF)
-		return nil
+		return nil, nil
 	case isOneRuneToken:
 		l.readRune()
 		l.emit(oneRuneToken)
-		return lexBegin
+		return lexBegin, nil
 	case nextRune == commentStart:
 		l.readLine()
 		l.emit(TokenComment)
-		return lexBegin
+		return lexBegin, nil
 	case unicode.IsLetter(nextRune) || nextRune == '_':
 		l.readAlphaNum()
 		l.emit(TokenIdentifier)
-		return lexBegin
+		return lexBegin, nil
 	case unicode.IsNumber(nextRune):
-		return lexNumberLiteral
+		return lexNumberLiteral, nil
 	case nextRune == quote:
-		return lexStringLiteral
+		return lexStringLiteral, nil
 	default:
-		return l.errorf("unexpected character: '%s'", string(nextRune))
+		return nil, fmt.Errorf("unexpected character '%s' at position %d", string(nextRune), l.current)
 	}
 }
 
-func lexStringLiteral(l *lexer) lexFn {
+func lexStringLiteral(l *lexer) (lexFn, error) {
 	// Opening quote
 	l.readRune()
 
@@ -66,10 +67,10 @@ func lexStringLiteral(l *lexer) lexFn {
 	}
 
 	l.emit(TokenLiteralString)
-	return lexBegin
+	return lexBegin, nil
 }
 
-func lexNumberLiteral(l *lexer) lexFn {
+func lexNumberLiteral(l *lexer) (lexFn, error) {
 	// Leading number
 	l.readRune()
 
@@ -82,5 +83,5 @@ func lexNumberLiteral(l *lexer) lexFn {
 		l.emit(TokenLiteralInt)
 	}
 
-	return lexBegin
+	return lexBegin, nil
 }

@@ -31,8 +31,7 @@ func TokenName(t TokenType) string {
 type TokenType int
 
 const (
-	TokenError TokenType = iota
-	TokenEOF
+	TokenEOF TokenType = iota
 	TokenNewline
 
 	TokenComment
@@ -52,7 +51,6 @@ const (
 )
 
 var tokenNames = map[TokenType]string{
-	TokenError:   "Error",
 	TokenEOF:     "EOF",
 	TokenNewline: "Newline",
 

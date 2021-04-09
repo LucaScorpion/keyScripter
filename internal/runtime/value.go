@@ -3,9 +3,9 @@ package runtime
 type Kind string
 
 const (
-	StringKind Kind = "string"
-	NumberKind Kind = "number"
-	AnyKind    Kind = "any"
+	StringKind   Kind = "string"
+	NumberKind   Kind = "number"
+	AnyKind      Kind = "any"
 	FunctionKind Kind = "function"
 )
 
