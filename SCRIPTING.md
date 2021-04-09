@@ -103,6 +103,15 @@ A simple print.
 Concatenate multiple 42 values 123
 ```
 
+### `scKeyDown`, `scKeyUp`
+
+Down or up a key based on a scan code. Note that scancodes for different keys can differ per application.
+
+```
+scKeyDown 28
+scKeyUp   28
+```
+
 ### `sleep`
 
 Wait a number of milliseconds before resuming the script.
