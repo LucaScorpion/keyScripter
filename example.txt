@@ -7,7 +7,7 @@ greet = () {
 }
 greet
 
-t = 100
+t = 100 # 0.1 second
 sleep t
 
 modPress = (mod key) {

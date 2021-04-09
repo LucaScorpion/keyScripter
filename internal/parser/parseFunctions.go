@@ -64,9 +64,9 @@ func (p *parser) parseAssignment() (runtime.Instruction, error) {
 	// Store the value in the context to keep track of the kind.
 	p.ctx.SetValue(varName, val.Resolve(p.ctx))
 
-	// An assignment must be followed by a newline or EOF.
+	// An assignment must be followed by a newline, comment, or EOF.
 	endToken := p.readToken()
-	if endToken.TokenType != lexer.TokenNewline && endToken.TokenType != lexer.TokenEOF {
+	if endToken.TokenType != lexer.TokenNewline && endToken.TokenType != lexer.TokenEOF && endToken.TokenType != lexer.TokenComment {
 		return nil, fmt.Errorf("unexpected %s token after assignment", endToken.Name())
 	}
 
