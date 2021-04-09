@@ -6,12 +6,14 @@ import (
 )
 
 var Functions = map[string]ConcreteValue{
+	"pause":     makeNativeFunction(pauseFn),
 	"print":     makeNativeFunction(printFn),
 	"sleep":     makeNativeFunction(sleepFn),
-	"pause":     makeNativeFunction(pauseFn),
 	"vKeyDown":  makeNativeFunction(vKeyDown),
 	"vKeyUp":    makeNativeFunction(vKeyUp),
 	"vKeyPress": makeNativeFunction(vKeyPress),
+	"scKeyDown": makeNativeFunction(scKeyDown),
+	"scKeyUp":   makeNativeFunction(scKeyUp),
 }
 
 type callable interface {
