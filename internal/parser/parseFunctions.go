@@ -10,39 +10,32 @@ import (
 func (p *parser) parseInstructions() ([]runtime.Instruction, error) {
 	var instr []runtime.Instruction
 	for nextToken := p.peekToken(); nextToken.TokenType != lexer.TokenEOF; nextToken = p.peekToken() {
-		switch nextToken.TokenType {
-		case lexer.TokenIdentifier:
-			afterNextToken := p.peekTokenN(2)
-			switch afterNextToken.TokenType {
-			case lexer.TokenAssign:
-				if i, err := p.parseAssignment(); err != nil {
-					return nil, err
-				} else {
-					instr = append(instr, i)
-				}
-			case lexer.TokenParenOpen:
-				// TODO
-				//if i, err := p.parseFuncDef(); err != nil {
-				//	return nil, err
-				//} else {
-				//	instr = append(instr, i)
-				//}
-			default:
-				if i, err := p.parseFuncCall(); err != nil {
-					return nil, err
-				} else {
-					instr = append(instr, i)
-				}
-			}
-		case lexer.TokenComment:
-			p.readToken()
-		case lexer.TokenNewline:
-			p.readToken()
-		default:
-			return nil, fmt.Errorf("unexpected token: %s", nextToken.Name())
+		if i, err := p.parseInstruction(); err != nil {
+			return nil, err
+		} else if i != nil {
+			instr = append(instr, i)
 		}
 	}
 	return instr, nil
+}
+
+func (p *parser) parseInstruction() (runtime.Instruction, error) {
+	nextToken := p.peekToken()
+	switch nextToken.TokenType {
+	case lexer.TokenIdentifier:
+		if p.peekTokenN(2).TokenType == lexer.TokenAssign {
+			return p.parseAssignment()
+		} else {
+			return p.parseFuncCall()
+		}
+	case lexer.TokenComment:
+		fallthrough
+	case lexer.TokenNewline:
+		p.readToken()
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unexpected token: %s", nextToken.Name())
+	}
 }
 
 func (p *parser) parseAssignment() (runtime.Instruction, error) {
