@@ -32,7 +32,40 @@ a = 0x41
 vKeyPress a
 ```
 
-## Functions
+## Custom Functions
+
+```
+myFunc = () {
+    print "Inside myFunc!"
+}
+myFunc
+```
+
+A function can accept arguments by putting the names in the brackets. The types of the arguments are inferred.
+
+```
+modPress = (mod key) {
+    vKeyDown mod
+    vKeyPress key
+    vKeyUp mod
+}
+
+shift = 0x10
+a = 0x41
+modPress shift a
+```
+
+Variables defined in a function are only available within that function. The following example will error, because the "hoist" variable is not defined.
+
+```
+noHoisting = () {
+    hoist = "nope"
+}
+noHoisting
+print hoist # This will error.
+```
+
+## Builtin Functions
 
 ### `pause`
 

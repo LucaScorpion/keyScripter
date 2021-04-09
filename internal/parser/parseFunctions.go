@@ -51,14 +51,8 @@ func (p *parser) parseInstruction() (runtime.Instruction, error) {
 }
 
 func (p *parser) parseAssignment() (runtime.Instruction, error) {
+	// Name token, assign token.
 	varName := p.readToken().Value
-
-	// Check if the name is not a function name.
-	if _, ok := runtime.Functions[varName]; ok {
-		return nil, fmt.Errorf("cannot assign to \"%s\"", varName)
-	}
-
-	// Consume the assign token.
 	p.readToken()
 
 	// Get the assigned value.
@@ -76,18 +70,18 @@ func (p *parser) parseAssignment() (runtime.Instruction, error) {
 		return nil, fmt.Errorf("unexpected %s token after assignment", endToken.Name())
 	}
 
-	return runtime.Assignment{
-		Name: varName,
-		Val:  val,
-	}, nil
+	return runtime.NewAssignment(varName, val), nil
 }
 
 func (p *parser) parseFuncCall() (runtime.Instruction, error) {
-	// Get the function name, look it up.
+	// Get the function name, check if it exists and is a function.
 	funcName := p.readToken().Value
-	fn, ok := runtime.Functions[funcName]
-	if !ok {
-		return nil, fmt.Errorf("unknown function \"%s\"", funcName)
+	if !p.ctx.HasValue(funcName) {
+		return nil, fmt.Errorf("unknown function: %s", funcName)
+	}
+	funcVal := p.ctx.GetValue(funcName)
+	if funcVal.Kind() != runtime.FunctionKind {
+		return nil, fmt.Errorf("cannot call a %s as a function: %s", funcVal.Kind(), funcName)
 	}
 
 	// Collect all function argument tokens.
@@ -106,7 +100,7 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 		}
 	}
 
-	// Validate the function.
+	// Get all argument kinds.
 	argKinds := make([]runtime.Kind, len(argValues))
 	for i := 0; i < len(argValues); i++ {
 		argI := argValues[i]
@@ -114,21 +108,34 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 
 		// For "any" kind args, change their kind in context to match the function's param kind.
 		if resolvedKind == runtime.AnyKind {
-			resolvedKind = fn.ParamKind(i)
+			resolvedKind = funcVal.ParamKind(i)
 			p.ctx.SetValue(argI.(runtime.VariableValue).Ref(), runtime.NewEmptyValue(resolvedKind))
 		}
 
 		argKinds[i] = resolvedKind
 	}
-	if err := fn.Validate(argKinds); err != nil {
-		return nil, err
+
+	// Check if the argument count matches.
+	if (funcVal.Variadic() && len(argValues) < len(funcVal.ParamKinds())-1) || (!funcVal.Variadic() && len(argValues) != len(funcVal.ParamKinds())) {
+		return nil, fmt.Errorf("mismatched argument count, expected %d but got %d", len(funcVal.ParamKinds()), len(argValues))
+	}
+
+	// Check if the argument kinds match.
+	for argI, argKind := range argKinds {
+		// Get the param index, to account for variadic parameters.
+		paramI := argI
+		if argI > len(funcVal.ParamKinds())-1 {
+			paramI = len(funcVal.ParamKinds()) - 1
+		}
+
+		paramKind := funcVal.ParamKind(paramI)
+		if paramKind != runtime.AnyKind && paramKind != argKind {
+			return nil, fmt.Errorf("mismatched argument type, expected %s but got %s", paramKind, argKind)
+		}
 	}
 
 	// Store the function call instruction.
-	return runtime.FunctionCall{
-		Fn:   fn,
-		Args: argValues,
-	}, nil
+	return runtime.NewFunctionCall(funcVal, argValues), nil
 }
 
 func (p *parser) parseValue() (runtime.Value, error) {
@@ -202,8 +209,14 @@ func (p *parser) parseFuncDef() (runtime.Value, error) {
 		return nil, err
 	}
 
+	// Get the parameter kinds from context.
+	paramKinds := make([]runtime.Kind, len(paramNames))
+	for i, name := range paramNames {
+		paramKinds[i] = p.ctx.GetValue(name).Kind()
+	}
+
 	// Restore the parser context.
 	p.ctx = p.ctx.Parent()
 
-	return runtime.NewFunctionValue(body), nil
+	return runtime.NewFunctionValue(runtime.NewRuntimeFunction(paramNames, body), paramKinds), nil
 }

@@ -5,38 +5,42 @@ import (
 	"reflect"
 )
 
-var Functions = map[string]*ScriptFn{
-	"print":     newScriptFn(printFn),
-	"sleep":     newScriptFn(sleepFn),
-	"pause":     newScriptFn(pauseFn),
-	"vKeyDown":  newScriptFn(vKeyDown),
-	"vKeyUp":    newScriptFn(vKeyUp),
-	"vKeyPress": newScriptFn(vKeyPress),
+var Functions = map[string]ConcreteValue{
+	"print":     makeNativeFunction(printFn),
+	"sleep":     makeNativeFunction(sleepFn),
+	"pause":     makeNativeFunction(pauseFn),
+	"vKeyDown":  makeNativeFunction(vKeyDown),
+	"vKeyUp":    makeNativeFunction(vKeyUp),
+	"vKeyPress": makeNativeFunction(vKeyPress),
 }
 
-type ScriptFn struct {
-	rawFn    reflect.Value
-	params   []Kind
-	variadic bool
+type callable interface {
+	call(args []Value, ctx *Context)
 }
 
-func newScriptFn(fn interface{}) *ScriptFn {
+type NativeFunction struct {
+	rawFn reflect.Value
+}
+
+type RuntimeFunction struct {
+	paramNames   []string
+	instructions []Instruction
+}
+
+func makeNativeFunction(fn interface{}) ConcreteValue {
 	t := reflect.TypeOf(fn)
 	if t.Kind() != reflect.Func {
-		panic(fmt.Errorf("cannot make runtime function from %s", t.Kind()))
+		panic(fmt.Errorf("cannot make native function from %s", t.Kind()))
 	}
 
-	res := &ScriptFn{
-		rawFn:    reflect.ValueOf(fn),
-		params:   make([]Kind, t.NumIn()),
-		variadic: t.IsVariadic(),
-	}
-
+	paramKinds := make([]Kind, t.NumIn())
 	for i := 0; i < t.NumIn(); i++ {
-		res.params[i] = kindFromType(t.In(i))
+		paramKinds[i] = kindFromType(t.In(i))
 	}
 
-	return res
+	return NewNativeFunctionValue(NativeFunction{
+		rawFn: reflect.ValueOf(fn),
+	}, paramKinds, t.IsVariadic())
 }
 
 var kindMap = map[reflect.Kind]Kind{
@@ -61,43 +65,31 @@ func kindFromType(t reflect.Type) Kind {
 	panic(fmt.Errorf("invalid value kind: %s", k.String()))
 }
 
-func (f *ScriptFn) ParamKind(index int) Kind {
-	clampedI := index
-	if index >= len(f.params) && f.variadic {
-		clampedI = len(f.params) - 1
-	}
-	return f.params[clampedI]
-}
-
-func (f *ScriptFn) Validate(args []Kind) error {
-	// Check if the argument count matches.
-	if (f.variadic && len(args) < len(f.params)-1) || (!f.variadic && len(args) != len(f.params)) {
-		return fmt.Errorf("mismatched argument count, expected %d but got %d", len(f.params), len(args))
-	}
-
-	// Check if the argument types match.
-	for argI := 0; argI < len(args); argI++ {
-		// Get the param index, to account for variadic parameters.
-		paramI := argI
-		if argI > len(f.params)-1 {
-			paramI = len(f.params) - 1
-		}
-
-		paramKind := f.params[paramI]
-		argKind := args[argI]
-		if paramKind != AnyKind && paramKind != argKind {
-			return fmt.Errorf("mismatched argument type, expected %s but got %s", paramKind, argKind)
-		}
-	}
-
-	return nil
-}
-
-func (f *ScriptFn) call(args []Value, ctx *Context) {
+func (f NativeFunction) call(args []Value, ctx *Context) {
 	in := make([]reflect.Value, len(args))
-	for i := 0; i < len(args); i++ {
-		in[i] = reflect.ValueOf(args[i].Resolve(ctx).value)
+	for i, a := range args {
+		in[i] = reflect.ValueOf(a.Resolve(ctx).value)
 	}
 
 	f.rawFn.Call(in)
+}
+
+func NewRuntimeFunction(paramNames []string, instructions []Instruction) RuntimeFunction {
+	return RuntimeFunction{
+		paramNames:   paramNames,
+		instructions: instructions,
+	}
+}
+
+func (f RuntimeFunction) call(args []Value, ctx *Context) {
+	// Set all argument values in context.
+	funcCtx := NewContext(ctx)
+	for i, v := range args {
+		funcCtx.SetValue(f.paramNames[i], v.Resolve(ctx))
+	}
+
+	// Execute all instructions.
+	for _, i := range f.instructions {
+		i.Execute(funcCtx)
+	}
 }

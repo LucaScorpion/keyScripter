@@ -1,5 +1,7 @@
 package runtime
 
+import "fmt"
+
 type Kind string
 
 const (
@@ -16,6 +18,11 @@ type Value interface {
 type ConcreteValue struct {
 	kind  Kind
 	value interface{}
+
+	// Function-specific
+	paramKinds []Kind
+	variadic   bool
+	native     bool
 }
 
 func NewStringValue(val string) ConcreteValue {
@@ -32,15 +39,21 @@ func NewNumberValue(val int) ConcreteValue {
 	}
 }
 
-func NewFunctionValue(val []Instruction) ConcreteValue {
+func NewFunctionValue(fn RuntimeFunction, paramKinds []Kind) ConcreteValue {
 	return ConcreteValue{
-		kind: FunctionKind,
-		value: func(ctx *Context) {
-			funcCtx := NewContext(ctx)
-			for _, i := range val {
-				i.Execute(funcCtx)
-			}
-		},
+		kind:       FunctionKind,
+		value:      fn,
+		paramKinds: paramKinds,
+	}
+}
+
+func NewNativeFunctionValue(fn callable, paramKinds []Kind, variadic bool) ConcreteValue {
+	return ConcreteValue{
+		kind:       FunctionKind,
+		value:      fn,
+		paramKinds: paramKinds,
+		variadic:   variadic,
+		native:     true,
 	}
 }
 
@@ -54,9 +67,41 @@ func (v ConcreteValue) Resolve(_ *Context) ConcreteValue {
 	return v
 }
 
+func (v ConcreteValue) assertKind(expected Kind) {
+	if v.kind != expected {
+		panic(fmt.Errorf("expected %s, got %s", expected, v.kind))
+	}
+}
+
 func (v ConcreteValue) Kind() Kind {
 	return v.kind
 }
+
+func (v ConcreteValue) ParamKinds() []Kind {
+	v.assertKind(FunctionKind)
+	return v.paramKinds
+}
+
+func (v ConcreteValue) ParamKind(index int) Kind {
+	v.assertKind(FunctionKind)
+	clampedI := index
+	if index >= len(v.paramKinds) && v.variadic {
+		clampedI = len(v.paramKinds) - 1
+	}
+	return v.paramKinds[clampedI]
+}
+
+func (v ConcreteValue) Variadic() bool {
+	v.assertKind(FunctionKind)
+	return v.variadic
+}
+
+func (v ConcreteValue) call(args []Value, ctx *Context) {
+	v.assertKind(FunctionKind)
+	v.value.(callable).call(args, ctx)
+}
+
+// TODO: Merge VariableValue into ConcreteValue
 
 type VariableValue struct {
 	ref string

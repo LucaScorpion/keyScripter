@@ -5,19 +5,33 @@ type Instruction interface {
 }
 
 type FunctionCall struct {
-	Fn   *ScriptFn
-	Args []Value
+	fn   callable
+	args []Value
+}
+
+func NewFunctionCall(fn callable, args []Value) FunctionCall {
+	return FunctionCall{
+		fn:   fn,
+		args: args,
+	}
 }
 
 func (f FunctionCall) Execute(ctx *Context) {
-	f.Fn.call(f.Args, ctx)
+	f.fn.call(f.args, ctx)
 }
 
 type Assignment struct {
-	Name string
-	Val  Value
+	name string
+	val  Value
+}
+
+func NewAssignment(name string, val Value) Assignment {
+	return Assignment{
+		name: name,
+		val:  val,
+	}
 }
 
 func (a Assignment) Execute(ctx *Context) {
-	ctx.SetValue(a.Name, a.Val.Resolve(ctx))
+	ctx.SetValue(a.name, a.val.Resolve(ctx))
 }

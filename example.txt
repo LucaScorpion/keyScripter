@@ -2,21 +2,24 @@
 print "Starting script..."
 sleep 10 # milliseconds
 
+greet = () {
+    print "Hello there!"
+}
+greet
+
 t = 100
 sleep t
 
-press = (key) {
-    vKeyDown key
-    vKeyUp   key
-
+modPress = (mod key) {
+    vKeyDown mod
+    vKeyPress key
+    vKeyUp mod
 }
 
 a     = 0x41
 shift = 0x10
 
 # aAa
-#press    a
-vKeyDown shift
-#press    a
-vKeyUp   shift
-#press    a
+vKeyPress a
+modPress shift a
+vKeyPress a
