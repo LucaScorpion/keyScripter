@@ -9,46 +9,43 @@ const (
 	NumberKind   Kind = "number"
 	AnyKind      Kind = "any"
 	FunctionKind Kind = "function"
+	VariableKind Kind = "variable"
 )
 
-type Value interface {
-	Resolve(ctx *Context) ConcreteValue
-}
-
-type ConcreteValue struct {
+type Value struct {
 	kind  Kind
 	value interface{}
 
-	// Function-specific
+	// Function
 	paramKinds []Kind
 	variadic   bool
 	native     bool
 }
 
-func NewStringValue(val string) ConcreteValue {
-	return ConcreteValue{
+func NewStringValue(val string) *Value {
+	return &Value{
 		kind:  StringKind,
 		value: val,
 	}
 }
 
-func NewNumberValue(val int) ConcreteValue {
-	return ConcreteValue{
+func NewNumberValue(val int) *Value {
+	return &Value{
 		kind:  NumberKind,
 		value: val,
 	}
 }
 
-func NewFunctionValue(fn RuntimeFunction, paramKinds []Kind) ConcreteValue {
-	return ConcreteValue{
+func NewFunctionValue(fn *RuntimeFunction, paramKinds []Kind) *Value {
+	return &Value{
 		kind:       FunctionKind,
 		value:      fn,
 		paramKinds: paramKinds,
 	}
 }
 
-func NewNativeFunctionValue(fn callable, paramKinds []Kind, variadic bool) ConcreteValue {
-	return ConcreteValue{
+func NewNativeFunctionValue(fn callable, paramKinds []Kind, variadic bool) *Value {
+	return &Value{
 		kind:       FunctionKind,
 		value:      fn,
 		paramKinds: paramKinds,
@@ -57,32 +54,46 @@ func NewNativeFunctionValue(fn callable, paramKinds []Kind, variadic bool) Concr
 	}
 }
 
-func NewEmptyValue(kind Kind) ConcreteValue {
-	return ConcreteValue{
+func NewEmptyValue(kind Kind) *Value {
+	return &Value{
 		kind: kind,
 	}
 }
 
-func (v ConcreteValue) Resolve(_ *Context) ConcreteValue {
+func NewVariableValue(ref string) *Value {
+	return &Value{
+		kind:  VariableKind,
+		value: ref,
+	}
+}
+
+func (v *Value) Resolve(ctx *Context) *Value {
+	if v.kind == VariableKind {
+		return ctx.GetValue(v.value.(string))
+	}
 	return v
 }
 
-func (v ConcreteValue) assertKind(expected Kind) {
+func (v *Value) assertKind(expected Kind) {
 	if v.kind != expected {
 		panic(fmt.Errorf("expected %s, got %s", expected, v.kind))
 	}
 }
 
-func (v ConcreteValue) Kind() Kind {
+func (v *Value) RawValue() interface{} {
+	return v.value
+}
+
+func (v *Value) Kind() Kind {
 	return v.kind
 }
 
-func (v ConcreteValue) ParamKinds() []Kind {
+func (v *Value) ParamKinds() []Kind {
 	v.assertKind(FunctionKind)
 	return v.paramKinds
 }
 
-func (v ConcreteValue) ParamKind(index int) Kind {
+func (v *Value) ParamKind(index int) Kind {
 	v.assertKind(FunctionKind)
 	clampedI := index
 	if index >= len(v.paramKinds) && v.variadic {
@@ -91,32 +102,12 @@ func (v ConcreteValue) ParamKind(index int) Kind {
 	return v.paramKinds[clampedI]
 }
 
-func (v ConcreteValue) Variadic() bool {
+func (v *Value) Variadic() bool {
 	v.assertKind(FunctionKind)
 	return v.variadic
 }
 
-func (v ConcreteValue) call(args []Value, ctx *Context) {
+func (v *Value) call(args []*Value, ctx *Context) {
 	v.assertKind(FunctionKind)
 	v.value.(callable).call(args, ctx)
-}
-
-// TODO: Merge VariableValue into ConcreteValue
-
-type VariableValue struct {
-	ref string
-}
-
-func NewVariableValue(ref string) VariableValue {
-	return VariableValue{
-		ref: ref,
-	}
-}
-
-func (v VariableValue) Ref() string {
-	return v.ref
-}
-
-func (v VariableValue) Resolve(ctx *Context) ConcreteValue {
-	return ctx.GetValue(v.ref)
 }

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-var nativeFunctions = map[string]ConcreteValue{
+var nativeFunctions = map[string]*Value{
 	"pause":     makeNativeFunction(pauseFn),
 	"print":     makeNativeFunction(printFn),
 	"sleep":     makeNativeFunction(sleepFn),
@@ -17,7 +17,7 @@ var nativeFunctions = map[string]ConcreteValue{
 }
 
 type callable interface {
-	call(args []Value, ctx *Context)
+	call(args []*Value, ctx *Context)
 }
 
 type NativeFunction struct {
@@ -29,7 +29,7 @@ type RuntimeFunction struct {
 	instructions []Instruction
 }
 
-func makeNativeFunction(fn interface{}) ConcreteValue {
+func makeNativeFunction(fn interface{}) *Value {
 	t := reflect.TypeOf(fn)
 	if t.Kind() != reflect.Func {
 		panic(fmt.Errorf("cannot make native function from %s", t.Kind()))
@@ -67,7 +67,7 @@ func kindFromType(t reflect.Type) Kind {
 	panic(fmt.Errorf("invalid value kind: %s", k.String()))
 }
 
-func (f NativeFunction) call(args []Value, ctx *Context) {
+func (f NativeFunction) call(args []*Value, ctx *Context) {
 	in := make([]reflect.Value, len(args))
 	for i, a := range args {
 		in[i] = reflect.ValueOf(a.Resolve(ctx).value)
@@ -76,14 +76,14 @@ func (f NativeFunction) call(args []Value, ctx *Context) {
 	f.rawFn.Call(in)
 }
 
-func NewRuntimeFunction(paramNames []string, instructions []Instruction) RuntimeFunction {
-	return RuntimeFunction{
+func NewRuntimeFunction(paramNames []string, instructions []Instruction) *RuntimeFunction {
+	return &RuntimeFunction{
 		paramNames:   paramNames,
 		instructions: instructions,
 	}
 }
 
-func (f RuntimeFunction) call(args []Value, ctx *Context) {
+func (f RuntimeFunction) call(args []*Value, ctx *Context) {
 	// Set all argument values in context.
 	funcCtx := NewContext(ctx)
 	for i, v := range args {

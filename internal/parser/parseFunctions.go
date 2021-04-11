@@ -83,7 +83,7 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 	}
 
 	// Collect all function argument tokens.
-	var argValues []runtime.Value
+	var argValues []*runtime.Value
 	for next := p.peekToken(); next.TokenType != lexer.TokenEOF && next.TokenType != lexer.TokenNewline; next = p.peekToken() {
 		if next.IsValueToken() {
 			val, err := p.parseValue()
@@ -105,7 +105,7 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 		// For "any" kind args, change their kind in context to match the function's param kind.
 		if resolvedKind == runtime.AnyKind {
 			resolvedKind = funcVal.ParamKind(i)
-			p.ctx.SetValue(argI.(runtime.VariableValue).Ref(), runtime.NewEmptyValue(resolvedKind))
+			p.ctx.SetValue(argI.RawValue().(string), runtime.NewEmptyValue(resolvedKind))
 		}
 
 		argKinds[i] = resolvedKind
@@ -134,7 +134,7 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 	return runtime.NewFunctionCall(funcVal, argValues), nil
 }
 
-func (p *parser) parseValue() (runtime.Value, error) {
+func (p *parser) parseValue() (*runtime.Value, error) {
 	valueToken := p.readToken()
 	switch valueToken.TokenType {
 	case lexer.TokenLiteralString:
@@ -168,7 +168,7 @@ func (p *parser) parseValue() (runtime.Value, error) {
 	}
 }
 
-func (p *parser) parseFuncDef() (runtime.Value, error) {
+func (p *parser) parseFuncDef() (*runtime.Value, error) {
 	// The opening paren is already read.
 
 	// Start a new parser context.

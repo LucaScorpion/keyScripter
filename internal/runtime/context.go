@@ -3,13 +3,13 @@ package runtime
 import "fmt"
 
 type Context struct {
-	values map[string]ConcreteValue
+	values map[string]*Value
 	parent *Context
 }
 
 func NewContext(parent *Context) *Context {
 	return &Context{
-		values: map[string]ConcreteValue{},
+		values: map[string]*Value{},
 		parent: parent,
 	}
 }
@@ -29,11 +29,11 @@ func (c *Context) Parent() *Context {
 	return c.parent
 }
 
-func (c *Context) SetValue(name string, v ConcreteValue) {
+func (c *Context) SetValue(name string, v *Value) {
 	c.values[name] = v
 }
 
-func (c *Context) GetValue(name string) ConcreteValue {
+func (c *Context) GetValue(name string) *Value {
 	if v, ok := c.values[name]; ok {
 		return v
 	}

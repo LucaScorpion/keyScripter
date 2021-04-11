@@ -6,10 +6,10 @@ type Instruction interface {
 
 type FunctionCall struct {
 	fn   callable
-	args []Value
+	args []*Value
 }
 
-func NewFunctionCall(fn callable, args []Value) FunctionCall {
+func NewFunctionCall(fn callable, args []*Value) FunctionCall {
 	return FunctionCall{
 		fn:   fn,
 		args: args,
@@ -22,10 +22,10 @@ func (f FunctionCall) Execute(ctx *Context) {
 
 type Assignment struct {
 	name string
-	val  Value
+	val  *Value
 }
 
-func NewAssignment(name string, val Value) Assignment {
+func NewAssignment(name string, val *Value) Assignment {
 	return Assignment{
 		name: name,
 		val:  val,
