@@ -40,8 +40,6 @@ func (p *parser) parseInstruction() (runtime.Instruction, error) {
 		} else {
 			return p.parseFuncCall()
 		}
-	case lexer.TokenComment:
-		fallthrough
 	case lexer.TokenNewline:
 		p.readToken()
 		return nil, nil
@@ -66,7 +64,7 @@ func (p *parser) parseAssignment() (runtime.Instruction, error) {
 
 	// An assignment must be followed by a newline, comment, or EOF.
 	endToken := p.readToken()
-	if endToken.TokenType != lexer.TokenNewline && endToken.TokenType != lexer.TokenEOF && endToken.TokenType != lexer.TokenComment {
+	if endToken.TokenType != lexer.TokenNewline && endToken.TokenType != lexer.TokenEOF {
 		return nil, fmt.Errorf("unexpected %s token after assignment", endToken.Name())
 	}
 
@@ -93,8 +91,6 @@ func (p *parser) parseFuncCall() (runtime.Instruction, error) {
 				return nil, err
 			}
 			argValues = append(argValues, val)
-		} else if next.TokenType == lexer.TokenComment {
-			p.readToken()
 		} else {
 			return nil, fmt.Errorf("unexpected token in function call: %s", next.Name())
 		}

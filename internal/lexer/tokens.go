@@ -34,8 +34,6 @@ const (
 	TokenEOF TokenType = iota
 	TokenNewline
 
-	TokenComment
-
 	beginValueTokens
 	TokenIdentifier
 	TokenLiteralString
@@ -53,8 +51,6 @@ const (
 var tokenNames = map[TokenType]string{
 	TokenEOF:     "EOF",
 	TokenNewline: "Newline",
-
-	TokenComment: "Comment",
 
 	TokenIdentifier:    "Identifier",
 	TokenLiteralString: "String",

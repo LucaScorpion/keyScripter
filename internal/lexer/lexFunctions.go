@@ -32,7 +32,7 @@ func lexBegin(l *lexer) (lexFn, error) {
 		return lexBegin, nil
 	case nextRune == commentStart:
 		l.readLine()
-		l.emit(TokenComment)
+		l.discard()
 		return lexBegin, nil
 	case unicode.IsLetter(nextRune) || nextRune == '_':
 		l.readAlphaNum()
