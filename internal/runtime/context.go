@@ -9,9 +9,20 @@ type Context struct {
 
 func NewContext(parent *Context) *Context {
 	return &Context{
-		values: make(map[string]ConcreteValue),
+		values: map[string]ConcreteValue{},
 		parent: parent,
 	}
+}
+
+func RootContext() *Context {
+	ctx := NewContext(nil)
+
+	// Store all the native functions in the context.
+	for n, f := range nativeFunctions {
+		ctx.SetValue(n, f)
+	}
+
+	return ctx
 }
 
 func (c *Context) Parent() *Context {

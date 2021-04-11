@@ -17,9 +17,13 @@ modPress = (mod key) {
 }
 
 a     = 0x41
+b     = 0x42
 shift = 0x10
 
 # aAa
 vKeyPress a
 modPress shift a
 vKeyPress a
+
+press = vKeyPress
+press b

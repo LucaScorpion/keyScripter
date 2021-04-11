@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-var Functions = map[string]ConcreteValue{
+var nativeFunctions = map[string]ConcreteValue{
 	"pause":     makeNativeFunction(pauseFn),
 	"print":     makeNativeFunction(printFn),
 	"sleep":     makeNativeFunction(sleepFn),

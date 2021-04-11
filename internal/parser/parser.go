@@ -18,15 +18,9 @@ func Parse(input string) (*runtime.Script, error) {
 		return nil, err
 	}
 
-	// Create the root context.
-	ctx := runtime.NewContext(nil)
-	for n, f := range runtime.Functions {
-		ctx.SetValue(n, f)
-	}
-
 	p := &parser{
 		tokens: lex.Tokens(),
-		ctx:    ctx,
+		ctx:    runtime.RootContext(),
 	}
 
 	if instr, err := p.parseInstructions(); err != nil {
