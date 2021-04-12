@@ -64,6 +64,11 @@ func (l *lexer) discard() {
 	l.start = l.current
 }
 
+// Reset the current token by setting the current position to start.
+func (l *lexer) reset() {
+	l.current = l.start
+}
+
 func (l *lexer) peekRune() rune {
 	if l.current >= len(l.input) {
 		return eof

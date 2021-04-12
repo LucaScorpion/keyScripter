@@ -19,6 +19,15 @@ func lexBegin(l *lexer) (lexFn, error) {
 	l.readSpace()
 	l.discard()
 
+	// Try to read reserved keywords first.
+	l.readAlphaNum()
+	switch l.currentValue() {
+	case timestamps:
+		l.emit(TokenTimestamps)
+		return lexBegin, nil
+	}
+	l.reset()
+
 	nextRune := l.peekRune()
 	oneRuneToken, isOneRuneToken := oneRuneTokens[nextRune]
 

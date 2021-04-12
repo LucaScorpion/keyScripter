@@ -46,6 +46,8 @@ const (
 	TokenParenClose
 	TokenBlockStart
 	TokenBlockEnd
+
+	TokenTimestamps
 )
 
 var tokenNames = map[TokenType]string{
@@ -62,6 +64,8 @@ var tokenNames = map[TokenType]string{
 	TokenParenClose: ")",
 	TokenBlockStart: "{",
 	TokenBlockEnd:   "}",
+
+	TokenTimestamps: "timestamps",
 }
 
 const (
@@ -75,4 +79,7 @@ const (
 	parenClose   rune = ')'
 	blockStart   rune = '{'
 	blockEnd     rune = '}'
+
+	// Reserved keywords.
+	timestamps string = "timestamps"
 )

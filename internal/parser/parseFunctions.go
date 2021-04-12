@@ -43,6 +43,8 @@ func (p *parser) parseInstruction() (runtime.Instruction, error) {
 	case lexer.TokenNewline:
 		p.readToken()
 		return nil, nil
+	case lexer.TokenTimestamps:
+		return p.parseTimestamps()
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", nextToken.Name())
 	}
@@ -215,4 +217,57 @@ func (p *parser) parseFuncDef() (*runtime.Value, error) {
 	p.ctx = p.ctx.Parent()
 
 	return runtime.NewFunctionValue(runtime.NewRuntimeFunction(paramNames, body), paramKinds), nil
+}
+
+func (p *parser) parseTimestamps() (runtime.Instruction, error) {
+	// Timestamps and block start.
+	p.readToken()
+	p.expectToken(lexer.TokenBlockStart)
+
+	// Timestamps body.
+	body, err := p.parseTimestampsBlock()
+	if err != nil {
+		return nil, err
+	}
+
+	// Block end.
+	p.expectToken(lexer.TokenBlockEnd)
+
+	return runtime.NewTimestamps(body), nil
+}
+
+func (p *parser) parseTimestampsBlock() ([]runtime.TimestampInstr, error) {
+	var instr []runtime.TimestampInstr
+	lastTimestamp := 0
+	for nextToken := p.peekToken(); nextToken.TokenType != lexer.TokenEOF && nextToken.TokenType != lexer.TokenBlockEnd; nextToken = p.peekToken() {
+		// Discard newlines.
+		if nextToken.TokenType == lexer.TokenNewline {
+			p.readToken()
+			continue
+		}
+
+		// Timestamp.
+		ms, err := p.expectToken(lexer.TokenLiteralInt)
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if the timestamp is valid.
+		msInt, err := strconv.Atoi(ms.Value)
+		if err != nil {
+			return nil, fmt.Errorf("invalid number value: %s", ms.Value)
+		}
+		if msInt < lastTimestamp {
+			return nil, fmt.Errorf("timestamps must be equal or ascending: %d -> %d", lastTimestamp, msInt)
+		}
+		lastTimestamp = msInt
+
+		// Parse the instruction.
+		if i, err := p.parseInstruction(); err != nil {
+			return nil, err
+		} else if i != nil {
+			instr = append(instr, runtime.NewTimestampInstr(int64(msInt), i))
+		}
+	}
+	return instr, nil
 }

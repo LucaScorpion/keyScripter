@@ -27,3 +27,10 @@ vKeyPress a
 
 press = vKeyPress
 press b
+
+timestamps {
+    0       print "a"
+    500     print "b"
+    1000    print "c"
+    1000    print "d"
+}
