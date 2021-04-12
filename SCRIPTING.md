@@ -10,12 +10,26 @@ print "Call functions like this."
 timeToSleep = 500
 sleep timeToSleep
 
+# Create custom functions to reuse blocks of logic.
+myFunc = (first second) {
+    print first
+    print second
+}
+myFunc "This is a" "custom function"
+
+# Use timestamp blocks for easy specific timings.
+timestamps {
+    0    print "This runs immediately"
+    1000 print "This runs after one second"
+    2000 print "It's like using sleep, but easier"
+}
+
 print "That's all folks!"
 ```
 
 ## Values
 
-There are 2 kinds of values: strings and integers. Strings are values wrapped in quotes (`"`). Integers are bare numbers, which can be either in decimal or hexadecimal notation.
+There are 2 kinds of values: strings and integers. Strings are values wrapped in double quotes (`"`). Integers are numbers, which can be either in decimal or hexadecimal notation.
 
 ```
 print "I am a string"
@@ -63,6 +77,35 @@ noHoisting = () {
 }
 noHoisting
 print hoist # This will error.
+```
+
+## Timestamps
+
+Timestamp blocks allow you to call a function on specific times. Each line of a timestamp block starts with a number, which is the amount of milliseconds from the start of the block at which the function should run.
+
+```
+timestamps {
+    0    print "Start"
+    300  print "Wait a bit"
+    2000 print "Done"
+}
+
+# Is functionally the same as:
+
+print "Start"
+sleep 300
+print "Wait a bit"
+sleep 1700
+print "Done"
+```
+
+The millisecond values should always go up. This example will error:
+
+```
+timestamps {
+    300 print "300"
+    100 print "Not allowed"
+}
 ```
 
 ## Builtin Functions
