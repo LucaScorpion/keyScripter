@@ -21,6 +21,7 @@ func Parse(input string) (*runtime.Script, error) {
 	p := &parser{
 		tokens: lex.Tokens(),
 		ctx:    runtime.RootContext(),
+		tokenPos: -1,
 	}
 
 	if instr, err := p.parseInstructions(); err != nil {
